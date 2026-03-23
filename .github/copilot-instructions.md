@@ -44,7 +44,7 @@ What to avoid (project-specific)
 - Do not generate code as Architect Agent. Do not reinterpret domain rules as Backend/Frontend — follow the Domain Agent outputs.
 
 If something is missing
-- If you cannot find `package.json`, `specs/phase-*.md`, or CI scripts, stop and ask the human for the preferred commands and where to place specs.
+- If you cannot find `package.json`, `docs/plans/phase-*.md`, or CI scripts, stop and ask the human for the preferred commands and where to place specs.
 
 Feedback
 - After applying changes or producing a spec, stop and request explicit human approval using the exact tokens above.

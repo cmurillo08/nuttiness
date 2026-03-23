@@ -52,7 +52,8 @@ export default function EntityTable({ endpoint = "/api/products", columns = [], 
   async function doDelete() {
     const id = confirm.id
     try {
-      const res = await fetch(`${endpoint}/${id}`, { method: "DELETE" })
+      const base = endpoint.split('?')[0]
+      const res = await fetch(`${base}/${id}`, { method: "DELETE" })
       if (!res.ok) throw new Error(`Delete failed: ${res.status}`)
       setItems((s) => s.filter((i) => String(i.id) !== String(id)))
     } catch (e) {
@@ -71,17 +72,6 @@ export default function EntityTable({ endpoint = "/api/products", columns = [], 
       {error && (
         <div className="text-red-600">
           <div>{error}</div>
-          <button className="mt-2 text-sm text-blue-600" onClick={() => {
-            setError(null)
-            setLoading(true)
-            fetch(endpoint).then(async (res) => {
-              if (!res.ok) {
-                const t = await res.text()
-                throw new Error(t && t.trim().startsWith('<') ? `Server error ${res.status}` : `Error ${res.status}: ${t}`)
-              }
-              return res.json()
-            }).then((data) => setItems(Array.isArray(data) ? data : [])).catch((e) => setError(String(e.message ?? e))).finally(() => setLoading(false))
-          }}>Retry</button>
         </div>
       )}
       {!loading && !items.length && <div className="text-sm text-gray-500">No items found.</div>}

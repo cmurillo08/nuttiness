@@ -3,11 +3,11 @@ import validators from '../../../lib/validators';
 import errors from '../../../lib/errors';
 
 function scaleToInt(n) {
-  return Math.round(Number(n) * 10000);
+  return Math.round(Number(n) * 100);
 }
 
-function toFixed4FromScaled(scaled) {
-  return (scaled / 10000).toFixed(4);
+function toFixed2FromScaled(scaled) {
+  return (scaled / 100).toFixed(2);
 }
 
 export async function GET() {
@@ -28,12 +28,12 @@ export async function POST(req) {
     if (!ok) return errors.badRequest(validators.SaleItem.errors);
   }
 
-  // compute and validate totals using integer math (4 decimal places)
+  // compute and validate totals using integer math (2 decimal places)
   let sumScaled = 0;
   for (const it of items) {
     const qty = Number(it.quantity);
     const unit = Number(it.unit_price);
-    const computedScaled = Math.round(qty * unit * 10000);
+    const computedScaled = Math.round(qty * unit * 100);
     const providedScaled = scaleToInt(it.line_total);
     if (computedScaled !== providedScaled) {
       return errors.badRequest({ message: 'line_total mismatch for an item', prepared_product_id: it.prepared_product_id });
@@ -49,7 +49,7 @@ export async function POST(req) {
   try {
     const result = await runTransaction(async (client) => {
       const saleCols = ['customer_name','status','total_amount','created_at','updated_at'];
-      const saleVals = [body.customer_name || null, body.status, toFixed4FromScaled(providedTotalScaled), body.created_at || null, body.updated_at || null];
+      const saleVals = [body.customer_name || null, body.status, toFixed2FromScaled(providedTotalScaled), body.created_at || null, body.updated_at || null];
       const salePlace = saleCols.map((_,i)=>`$${i+1}`).join(',');
       const insertSaleQ = `INSERT INTO sales (${saleCols.join(',')}) VALUES (${salePlace}) RETURNING *`;
       const saleRes = await client.query(insertSaleQ, saleVals);
@@ -65,7 +65,7 @@ export async function POST(req) {
         const unitPriceScaled = scaleToInt(it.unit_price);
         const lineScaled = scaleToInt(it.line_total);
         const cols = ['sale_id','prepared_product_id','quantity','unit_price','line_total','created_at','updated_at'];
-        const vals = [saleId, it.prepared_product_id, qty, toFixed4FromScaled(unitPriceScaled), toFixed4FromScaled(lineScaled), it.created_at || null, it.updated_at || null];
+        const vals = [saleId, it.prepared_product_id, qty, toFixed2FromScaled(unitPriceScaled), toFixed2FromScaled(lineScaled), it.created_at || null, it.updated_at || null];
         const placeholders = cols.map((_,i)=>`$${i+1}`).join(',');
         const q = `INSERT INTO sale_items (${cols.join(',')}) VALUES (${placeholders}) RETURNING *`;
         await client.query(q, vals);

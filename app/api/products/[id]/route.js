@@ -7,7 +7,7 @@ function isUuid(id) {
 }
 
 export async function GET(req, { params }) {
-  const { id } = params;
+  const { id } = await params;
   if (!isUuid(id)) return errors.badRequest([{ message: 'Invalid id format' }]);
   return await withClient(async (client) => {
     const r = await client.query('SELECT * FROM prepared_products WHERE id = $1', [id]);
@@ -17,7 +17,7 @@ export async function GET(req, { params }) {
 }
 
 export async function PUT(req, { params }) {
-  const { id } = params;
+  const { id } = await params;
   if (!isUuid(id)) return errors.badRequest([{ message: 'Invalid id format' }]);
   const body = await req.json();
   const valid = validators.UpdatePreparedProduct(body);
@@ -25,8 +25,8 @@ export async function PUT(req, { params }) {
 
   return await withClient(async (client) => {
     try {
-      const q = `UPDATE prepared_products SET name=$2, price=$3, unit=$4, cost_price=$5, recipe_notes=$6, updated_at=now() WHERE id=$1 RETURNING *`;
-      const vals = [id, body.name, Number(body.price), body.unit, body.cost_price == null ? null : Number(body.cost_price), body.recipe_notes || null];
+      const q = `UPDATE prepared_products SET name=$2, price=$3, unit=$4, recipe_notes=$5, updated_at=now() WHERE id=$1 RETURNING *`;
+      const vals = [id, body.name, Number(body.price), body.unit, body.recipe_notes || null];
       const r = await client.query(q, vals);
       if (r.rowCount === 0) return errors.notFound();
       return errors.json(r.rows[0], 200);
@@ -38,7 +38,7 @@ export async function PUT(req, { params }) {
 }
 
 export async function PATCH(req, { params }) {
-  const { id } = params;
+  const { id } = await params;
   if (!isUuid(id)) return errors.badRequest([{ message: 'Invalid id format' }]);
   const body = await req.json();
 
@@ -51,8 +51,8 @@ export async function PATCH(req, { params }) {
     if (!valid) return errors.badRequest(validators.formatErrors(validators.UpdatePreparedProduct.errors));
 
     try {
-      const q = `UPDATE prepared_products SET name=$2, price=$3, unit=$4, cost_price=$5, recipe_notes=$6, updated_at=now() WHERE id=$1 RETURNING *`;
-      const vals = [id, merged.name, Number(merged.price), merged.unit, merged.cost_price == null ? null : Number(merged.cost_price), merged.recipe_notes || null];
+      const q = `UPDATE prepared_products SET name=$2, price=$3, unit=$4, recipe_notes=$5, updated_at=now() WHERE id=$1 RETURNING *`;
+      const vals = [id, merged.name, Number(merged.price), merged.unit, merged.recipe_notes || null];
       const r = await client.query(q, vals);
       return errors.json(r.rows[0], 200);
     } catch (err) {
@@ -63,7 +63,7 @@ export async function PATCH(req, { params }) {
 }
 
 export async function DELETE(req, { params }) {
-  const { id } = params;
+  const { id } = await params;
   if (!isUuid(id)) return errors.badRequest([{ message: 'Invalid id format' }]);
   return await withClient(async (client) => {
     const r = await client.query('DELETE FROM prepared_products WHERE id=$1 RETURNING *', [id]);

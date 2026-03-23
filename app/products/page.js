@@ -39,12 +39,12 @@ export default function Page() {
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-bold">Products</h1>
-        <Link href="/products/new" className="px-3 py-1 bg-blue-600 text-white rounded">New</Link>
+        <h1 className="text-2xl font-semibold text-primary">Products</h1>
+        <Link href="/products/new" className="px-3 py-2 bg-primary text-white rounded-md">New Product</Link>
       </div>
 
-      <div className="mb-4 flex gap-2">
-        <input placeholder="Search by name" value={search} onChange={(e) => setSearch(e.target.value)} className="p-2 border rounded" />
+      <div className="mb-4 flex gap-2 items-center">
+        <input placeholder="Search by name" value={search} onChange={(e) => setSearch(e.target.value)} className="p-2 border rounded w-full max-w-sm" />
         <select value={limit} onChange={(e) => { setLimit(Number(e.target.value)); setOffset(0) }} className="p-2 border rounded">
           <option value={5}>5</option>
           <option value={10}>10</option>
@@ -55,17 +55,18 @@ export default function Page() {
       {loading && <div>Loading…</div>}
       {error && <div className="text-red-600">{error}</div>}
 
-      <EntityTable endpoint={`/api/products?limit=${limit}&offset=${offset}`} items={filtered} columns={[
-        { key: "name", label: "Name" },
-        { key: "unit", label: "Unit" },
-        { key: "price", label: "Price", type: "amount" },
-        { key: "cost_price", label: "Cost", type: "amount" },
-      ]} editHrefBase="/products" />
+      <div className="bg-white rounded shadow p-4">
+        <EntityTable endpoint={`/api/products?limit=${limit}&offset=${offset}`} items={filtered} columns={[
+          { key: "name", label: "Name" },
+          { key: "unit", label: "Unit" },
+          { key: "price", label: "Price", type: "amount" },
+        ]} editHrefBase="/products" />
+      </div>
 
       <div className="flex items-center gap-2 mt-4">
-        <button className="px-3 py-1 border rounded" onClick={() => setOffset(Math.max(0, offset - limit))} disabled={offset === 0}>Prev</button>
+        <button className="px-3 py-2 border rounded-md" onClick={() => setOffset(Math.max(0, offset - limit))} disabled={offset === 0}>Prev</button>
         <div className="text-sm">Offset: {offset}</div>
-        <button className="px-3 py-1 border rounded" onClick={() => setOffset(offset + limit)}>Next</button>
+        <button className="px-3 py-2 border rounded-md" onClick={() => setOffset(offset + limit)}>Next</button>
       </div>
     </div>
   )

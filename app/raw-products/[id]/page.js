@@ -42,9 +42,11 @@ export default function Page() {
   if (!initialData) return <div className="text-sm text-gray-500">No data</div>
 
   return (
-    <div>
-      <h1 className="text-2xl font-semibold mb-4">Edit Raw Product</h1>
-      <RawProductForm initialData={initialData} endpoint={`/api/raw-products/${id}`} method="PUT" />
+    <div className="p-6">
+      <h1 className="text-2xl font-semibold mb-4 text-primary">Edit Raw Product</h1>
+      <div className="max-w-xl">
+        <RawProductForm initialData={initialData} endpoint={`/api/raw-products/${id}`} method="PUT" />
+      </div>
     </div>
   )
 }

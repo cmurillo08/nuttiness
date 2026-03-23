@@ -21,14 +21,12 @@ export async function POST(req) {
 
   return await withClient(async (client) => {
     try {
-      const cols = ['name','unit','unit_price','unit_size','supplier','notes'];
+      const cols = ['name','unit','price','supplier'];
       const vals = [
         body.name,
         body.unit,
-        Number(body.unit_price),
-        Number(body.unit_size),
+        Number(body.price),
         body.supplier || null,
-        body.notes || null,
       ];
       const placeholders = cols.map((_,i)=>`$${i+1}`).join(',');
       const q = `INSERT INTO raw_products (${cols.join(',')}) VALUES (${placeholders}) RETURNING *`;

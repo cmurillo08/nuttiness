@@ -58,8 +58,8 @@ export default function Page() {
       <EntityTable endpoint={`/api/raw-products?limit=${limit}&offset=${offset}`} items={filtered} columns={[
         { key: "name", label: "Name" },
         { key: "unit", label: "Unit" },
-        { key: "unit_price", label: "Unit Price", type: "amount" },
-        { key: "unit_size", label: "Size" },
+        { key: "price", label: "Price", type: "amount" },
+        { key: "supplier", label: "Supplier" },
       ]} editHrefBase="/raw-products" />
 
       <div className="flex items-center gap-2 mt-4">

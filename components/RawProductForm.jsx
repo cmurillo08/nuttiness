@@ -12,11 +12,9 @@ export default function RawProductForm({ endpoint = "/api/raw-products", method 
 
   const fields = [
     { name: "name", label: "Name", required: true },
-    { name: "unit", label: "Unit", required: true, hint: "e.g., kg, each" },
-    { name: "unit_price", label: "Unit Price (CRC)", type: "number", required: true, min: 0, step: "0.0001" },
-    { name: "unit_size", label: "Unit Size", type: "number", required: true, min: 0, step: "0.0001" },
+    { name: "unit", label: "Unit", required: true, hint: "e.g., 910g" },
+    { name: "price", label: "Price (CRC)", type: "number", required: true, min: 0, step: "0.01" },
     { name: "supplier", label: "Supplier" },
-    { name: "notes", label: "Notes", type: "textarea" },
   ]
 
   return <EntityForm endpoint={endpoint} method={method} initialData={initialData} fields={fields} onSuccess={handleSuccess} />

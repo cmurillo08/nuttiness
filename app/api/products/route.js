@@ -21,12 +21,11 @@ export async function POST(req) {
 
   return await withClient(async (client) => {
     try {
-      const cols = ['name','price','unit','cost_price','recipe_notes'];
+      const cols = ['name','price','unit','recipe_notes'];
       const vals = [
         body.name,
         Number(body.price),
         body.unit,
-        body.cost_price == null ? null : Number(body.cost_price),
         body.recipe_notes || null,
       ];
       const placeholders = cols.map((_,i)=>`$${i+1}`).join(',');

@@ -10,10 +10,10 @@ npm run dev
 
 Notable pages (App Router):
 
-- `/dashboard` — KPIs for products, raw materials, expenses, sales
-- `/raw-materials` — list raw products
-- `/raw-materials/new` — create raw product
-- `/raw-materials/[id]` — edit raw product
+- `/dashboard` — KPIs for products, raw products, expenses, sales
+- `/raw-products` — list raw products
+- `/raw-products/new` — create raw product
+- `/raw-products/[id]` — edit raw product
 - `/products` — list prepared products
 - `/products/new` — create prepared product
 - `/products/[id]` — edit prepared product

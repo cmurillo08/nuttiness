@@ -112,11 +112,11 @@ Validation (high-level)
 
 App layout
 - Central layout using Next.js App Router with a top navigation and left module nav, styled with Tailwind CSS.
-- Top-level nav entries: Dashboard, Products, Raw Materials, Expenses, Sales, Settings.
+- Top-level nav entries: Dashboard, Products, Raw Products, Expenses, Sales, Settings.
 
 Pages / Screens
 - Dashboard: KPIs (recent sales, recent purchases)
-- Raw Materials (list, create/edit form, detail)
+- Raw Products (list, create/edit form, detail)
 - Products (list, create/edit form)
 - Expenses (list, create)
 - Sales (create order flow, list orders)
@@ -128,7 +128,7 @@ Components (high-level)
 - Styling: use Tailwind CSS utility classes for component styles.
 
 User flows (examples)
-- Add Raw Material → create RawProduct → optionally record Expense
+- Add Raw Product → create RawProduct → optionally record Expense
 - Create Prepared Product → create product record with manual cost/price
 - Create Sale → add items → submit → record sale (no inventory adjustments in initial phases)
 

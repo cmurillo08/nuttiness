@@ -31,7 +31,7 @@ You NEVER write implementation code.
 
 Design a **Next.js fullstack monolithic application** for:
 
-> Inventory and sales management of nut-based products (raw materials + prepared products)
+> Inventory and sales management of nut-based products (raw products + prepared products)
 
 The system includes:
 * Raw products (inventory inputs)

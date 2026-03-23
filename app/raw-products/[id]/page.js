@@ -1,12 +1,12 @@
 "use client"
 import { useEffect, useState } from "react"
 import { useParams } from "next/navigation"
-import ProductForm from "../../../components/ProductForm"
+import RawProductForm from "../../../components/RawProductForm"
 
 export default function Page() {
   const params = useParams()
   const id = params?.id
-  const [initial, setInitial] = useState(null)
+  const [initialData, setInitialData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
@@ -17,7 +17,7 @@ export default function Page() {
       setLoading(true)
       setError(null)
       try {
-        const res = await fetch(`/api/products/${id}`)
+        const res = await fetch(`/api/raw-products/${id}`)
         if (res.status === 404) {
           throw new Error('Not found')
         }
@@ -26,7 +26,7 @@ export default function Page() {
           throw new Error(t || `Error ${res.status}`)
         }
         const data = await res.json()
-        if (mounted) setInitial(data)
+        if (mounted) setInitialData(data)
       } catch (e) {
         if (mounted) setError(String(e))
       } finally {
@@ -37,14 +37,14 @@ export default function Page() {
     return () => { mounted = false }
   }, [id])
 
-  if (loading) return <div className="p-6">Loading…</div>
-  if (error) return <div className="p-6 text-red-600">{error}</div>
-  if (!initial) return <div className="p-6 text-sm text-gray-500">No data</div>
+  if (loading) return <div>Loading…</div>
+  if (error) return <div className="text-red-600">{error}</div>
+  if (!initialData) return <div className="text-sm text-gray-500">No data</div>
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Edit Product</h1>
-      <ProductForm initialData={initial} endpoint={`/api/products/${id}`} method="PUT" />
+    <div>
+      <h1 className="text-2xl font-semibold mb-4">Edit Raw Product</h1>
+      <RawProductForm initialData={initialData} endpoint={`/api/raw-products/${id}`} method="PUT" />
     </div>
   )
 }

@@ -43,8 +43,12 @@ export default function Page() {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Edit Product</h1>
-      <ProductForm initialData={initial} endpoint={`/api/products/${id}`} method="PUT" />
+      <h1 className="text-2xl font-semibold text-primary mb-4">Edit Product</h1>
+      <div className="max-w-xl">
+        <div className="bg-white rounded shadow p-6">
+          <ProductForm initialData={initial} endpoint={`/api/products/${id}`} method="PUT" />
+        </div>
+      </div>
     </div>
   )
 }

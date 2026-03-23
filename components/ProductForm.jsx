@@ -12,9 +12,8 @@ export default function ProductForm({ endpoint = "/api/products", method = "POST
 
   const fields = [
     { name: "name", label: "Name", required: true },
-    { name: "unit", label: "Unit", required: true, hint: "e.g., each, portion" },
-    { name: "price", label: "Price (CRC)", type: "number", required: true, min: 0, step: "0.0001" },
-    { name: "cost_price", label: "Cost Price (CRC)", type: "number", required: false, min: 0, step: "0.0001" },
+    { name: "unit", label: "Unit", required: true, hint: "e.g., 250g" },
+    { name: "price", label: "Price (CRC)", type: "number", required: true, min: 0, step: "0.01" },
     { name: "recipe_notes", label: "Recipe Notes", type: "textarea" },
   ]
 

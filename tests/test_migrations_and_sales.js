@@ -24,15 +24,15 @@ async function runPostgres(url) {
   }
 
   // create a prepared_product, then insert sale + items transactionally and assert total
-  const pref = await client.query(`INSERT INTO prepared_products (name,price,unit) VALUES ('Test Prod', 12.0000, 'ea') RETURNING id`);
+  const pref = await client.query(`INSERT INTO prepared_products (name,price,unit) VALUES ('Test Prod', 12.00, 'ea') RETURNING id`);
   const pid = pref.rows[0].id;
 
   try {
     await client.query('BEGIN');
     const saleRes = await client.query(`INSERT INTO sales (customer_name,status,total_amount) VALUES ('T','prepared',0) RETURNING id`);
     const sid = saleRes.rows[0].id;
-    await client.query(`INSERT INTO sale_items (sale_id, prepared_product_id, quantity, unit_price, line_total) VALUES ($1,$2,2,12.0000,24.0000)`, [sid, pid]);
-    await client.query(`INSERT INTO sale_items (sale_id, prepared_product_id, quantity, unit_price, line_total) VALUES ($1,$2,1,5.0000,5.0000)`, [sid, pid]);
+    await client.query(`INSERT INTO sale_items (sale_id, prepared_product_id, quantity, unit_price, line_total) VALUES ($1,$2,2,12.00,24.00)`, [sid, pid]);
+    await client.query(`INSERT INTO sale_items (sale_id, prepared_product_id, quantity, unit_price, line_total) VALUES ($1,$2,1,5.00,5.00)`, [sid, pid]);
     await client.query(`UPDATE sales SET total_amount = (SELECT COALESCE(SUM(line_total),0) FROM sale_items WHERE sale_id = $1) WHERE id = $1`, [sid]);
     await client.query('COMMIT');
 

@@ -1,4 +1,4 @@
--- Phase 1 migration: create tables with pgcrypto UUIDs and numeric(12,4)
+-- Phase 1 migration: create tables with pgcrypto UUIDs and numeric(12,2)
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 -- Raw products (ingredients)
@@ -6,8 +6,8 @@ CREATE TABLE IF NOT EXISTS raw_products (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   name text NOT NULL,
   unit text NOT NULL,
-  unit_price numeric(12,4) NOT NULL CHECK (unit_price >= 0),
-  unit_size numeric(12,4) NOT NULL CHECK (unit_size > 0),
+  price numeric(12,2) NOT NULL CHECK (price >= 0),
+  supplier text,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz
 );
@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS raw_products (
 CREATE TABLE IF NOT EXISTS prepared_products (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   name text NOT NULL,
-  price numeric(12,4) NOT NULL CHECK (price >= 0),
+  price numeric(12,2) NOT NULL CHECK (price >= 0),
   unit text NOT NULL,
   recipe_notes text,
   created_at timestamptz NOT NULL DEFAULT now(),
@@ -27,8 +27,8 @@ CREATE TABLE IF NOT EXISTS prepared_products (
 CREATE TABLE IF NOT EXISTS expenses (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   raw_product_id uuid NOT NULL,
-  quantity numeric(12,4) NOT NULL CHECK (quantity > 0),
-  unit_cost numeric(12,4) NOT NULL CHECK (unit_cost >= 0),
+  quantity numeric(12,2) NOT NULL CHECK (quantity > 0),
+  cost numeric(12,2) NOT NULL CHECK (cost >= 0), -- renamed from unit_cost; cost is price per unit
   purchased_at timestamptz NOT NULL,
   notes text,
   created_at timestamptz NOT NULL DEFAULT now(),
@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS sales (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   customer_name text,
   status text NOT NULL CHECK (status IN ('prepared','delivered','paid','cancelled')),
-  total_amount numeric(12,4) NOT NULL CHECK (total_amount >= 0),
+  total_amount numeric(12,2) NOT NULL CHECK (total_amount >= 0),
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz
 );
@@ -51,9 +51,9 @@ CREATE TABLE IF NOT EXISTS sale_items (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   sale_id uuid NOT NULL,
   prepared_product_id uuid NOT NULL,
-  quantity numeric(12,4) NOT NULL CHECK (quantity > 0),
-  unit_price numeric(12,4) NOT NULL CHECK (unit_price >= 0),
-  line_total numeric(12,4) NOT NULL CHECK (line_total >= 0),
+  quantity numeric(12,2) NOT NULL CHECK (quantity > 0),
+  unit_price numeric(12,2) NOT NULL CHECK (unit_price >= 0),
+  line_total numeric(12,2) NOT NULL CHECK (line_total >= 0),
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz,
   CONSTRAINT fk_saleitem_sale FOREIGN KEY (sale_id) REFERENCES sales(id) ON DELETE CASCADE,

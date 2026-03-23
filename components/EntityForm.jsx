@@ -10,7 +10,18 @@ export default function EntityForm({ endpoint, method = "POST", initialData = {}
   const router = useRouter()
 
   // derive a sensible cancel href from the API endpoint when not provided
-  const resolvedCancelHref = cancelHref ?? (endpoint && endpoint.startsWith("/api") ? endpoint.replace(/^\/api/, "") : null)
+  const resolvedCancelHref = cancelHref ?? (() => {
+    if (!endpoint || !endpoint.startsWith("/api")) return null
+    // strip query string
+    let path = endpoint.split('?')[0]
+    // remove leading /api
+    path = path.replace(/^\/api/, '')
+    // remove trailing UUID-like segment (edit endpoints include the id)
+    path = path.replace(/\/[0-9a-fA-F-]{36}$/, '')
+    // normalize trailing slash (avoid empty string)
+    if (path === '') path = '/'
+    return path
+  })()
 
   function setField(name, value) {
     setData((d) => ({ ...d, [name]: value }))
@@ -39,17 +50,20 @@ export default function EntityForm({ endpoint, method = "POST", initialData = {}
     if (Object.keys(v).length) return setErrors(v)
     setSubmitting(true)
     try {
-      // Build payload: convert numeric fields to Numbers (4-decimal) and
-      // omit server-managed fields for create requests.
-      const fieldMap = Object.fromEntries(fields.map((f) => [f.name, f]))
+      // Build payload from declared fields: convert numeric fields to Numbers
+      // (2-decimal) and ensure all declared fields are included so updates
+      // don't accidentally drop values (e.g., `supplier`). Omit server-managed
+      // fields only for create requests.
       const payload = {}
-      for (const [k, v] of Object.entries(data)) {
+      for (const f of fields) {
+        const k = f.name
         if (method === "POST" && (k === "id" || k === "created_at" || k === "updated_at")) continue
-        if (fieldMap[k] && fieldMap[k].type === "number") {
+        const v = data[k]
+        if (f.type === "number") {
           const n = Number(v)
-          payload[k] = isNaN(n) ? null : parseFloat(Number(n).toFixed(4))
+          payload[k] = isNaN(n) ? null : parseFloat(Number(n).toFixed(2))
         } else {
-          payload[k] = v
+          payload[k] = v === undefined ? null : v
         }
       }
 

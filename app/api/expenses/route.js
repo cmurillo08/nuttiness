@@ -2,27 +2,44 @@ import { withClient } from '../../../lib/db';
 import validators from '../../../lib/validators';
 import errors from '../../../lib/errors';
 
-export async function GET() {
+export async function GET(req) {
+  const url = new URL(req.url);
+  const rawLimit = parseInt(url.searchParams.get('limit') || '100', 10) || 100;
+  const limit = Math.min(rawLimit, 1000);
+  const offset = parseInt(url.searchParams.get('offset') || '0', 10) || 0;
+
   return await withClient(async (client) => {
-    const res = await client.query('SELECT * FROM expenses ORDER BY purchased_at DESC LIMIT 100');
+    const q = `
+      SELECT e.*, json_build_object('id', rp.id, 'name', rp.name, 'price', rp.price) AS raw_product
+      FROM expenses e
+      LEFT JOIN raw_products rp ON e.raw_product_id = rp.id
+      ORDER BY purchased_at DESC
+      LIMIT $1 OFFSET $2
+    `
+    const res = await client.query(q, [limit, offset]);
     return errors.json(res.rows, 200);
   });
 }
 
 export async function POST(req) {
   const body = await req.json();
-  const valid = validators.Expense(body);
-  if (!valid) return errors.badRequest(validators.Expense.errors);
+  // Prefer schema validator if available
+  if (validators && typeof validators.CreateExpense === 'function') {
+    const ok = validators.CreateExpense(body);
+    if (!ok) return errors.badRequest(validators.formatErrors(validators.CreateExpense.errors));
+  }
+
+  // runtime fallback validation
+  const quantity = Number(body.quantity);
+  const costVal = Number(body.cost ?? body.unit_cost);
+  if (!Number.isFinite(quantity) || quantity <= 0) return errors.badRequest([{ message: 'quantity must be a positive number' }]);
+  if (!Number.isFinite(costVal) || costVal < 0) return errors.badRequest([{ message: 'cost must be a non-negative number' }]);
 
   return await withClient(async (client) => {
-    // verify raw_product exists
-    const fk = await client.query('SELECT 1 FROM raw_products WHERE id = $1', [body.raw_product_id]);
-    if (fk.rowCount === 0) return errors.notFound('raw_product not found');
-
     try {
-      const cols = ['raw_product_id','quantity','unit_cost','purchased_at','notes','created_at','updated_at'];
-      const vals = [body.raw_product_id, body.quantity, body.unit_cost, body.purchased_at, body.notes || null, body.created_at || null, body.updated_at || null];
-      const placeholders = cols.map((_,i)=>`$${i+1}`).join(',');
+      const cols = ['raw_product_id', 'quantity', 'cost', 'purchased_at', 'notes'];
+      const vals = [body.raw_product_id || null, quantity, costVal, body.purchased_at, body.notes || null];
+      const placeholders = cols.map((_, i) => `$${i + 1}`).join(',');
       const q = `INSERT INTO expenses (${cols.join(',')}) VALUES (${placeholders}) RETURNING *`;
       const r = await client.query(q, vals);
       return errors.json(r.rows[0], 201);

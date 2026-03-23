@@ -142,6 +142,11 @@ If feedback is given:
 - Prefer small, composable component classes and avoid large global CSS files.
 - Keep visual styling minimal and consistent with utility-first approach.
 
+Branding & Theme:
+- **Canonical logo:** use `public/logo.png` as the single source of truth for the app logo.
+- **Theme guidance:** derive primary/secondary colors and accessible tokens from the logo palette; prefer adding these as Tailwind CSS theme colors in `tailwind.config.js` or as CSS variables to ensure consistent usage across components.
+- **Assets:** reference images from the `public/` folder (e.g., `/logo.png`) so Next.js serves them statically.
+
 ---
 
 ## 🧠 Design Guidelines

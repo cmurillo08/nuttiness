@@ -150,6 +150,10 @@ You ensure:
 * No duplicated logic
 * Clear contracts between FE and BE
 
+Brand assets and theming:
+- Store canonical brand assets (logo, favicons) in `public/` (e.g. `public/logo.png`).
+- When orchestrating Frontend work, include a short note instructing the Frontend Agent to derive theme colors and tokens from the logo design and record those theme values in the phase spec or `tailwind.config.js`.
+
 ## 🧭 Orchestrator Behavior (Architect Agent)
 
 - The `Architect Agent` is the central orchestrator for phase progression. It owns the decision to allow downstream agents to act.

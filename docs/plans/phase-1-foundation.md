@@ -33,15 +33,14 @@ Entities
   - name (string)
   - unit (string) e.g. kg, lb
   - cost_price (decimal) optional
-  - unit_size (decimal) optional (e.g. 1.0 meaning 1 kg)
+  - unit_size (decimal) required (e.g. 1.0 meaning 1 kg)
   - supplier_id (nullable)
 
 PreparedProduct
   - id (uuid)
   - name (string)
-  - sku (string) optional
   - cost_price (decimal) optional  # manual entry, not derived from RawProduct
-  - sale_price (decimal)
+  - price (decimal)
   
 Notes: `PreparedProduct` is the sellable catalog. Cost and profit are recorded manually; no automatic linkage to `RawProduct` in Phase 1. No inventory is tracked in Phase 1.
 
@@ -70,12 +69,12 @@ Relationships
 
 - Persistence: Relational (Postgres) — Phase 1 will use Postgres. Design expressed as tables:
 - raw_products (id, name, unit, cost_price, unit_size, supplier_id, created_at, updated_at)
-- prepared_products (id, name, sku, sale_price, created_at, updated_at)
-- expenses (id, date, raw_product_id, quantity, total_cost, supplier, receipt_ref)
-- sales (id, date, total_amount, customer, status)
+ - prepared_products (id, name, price, created_at, updated_at)
+ - expenses (id, date, raw_product_id, quantity, unit_cost, supplier, receipt_ref)
+ - sales (id, date, total_amount, customer, status)
 - sale_items (sale_id, prepared_product_id, quantity, unit_price)
 
-Primary keys: uuid. Currency/decimal fields: use numeric/decimal at persistence layer. Timestamps: created_at/updated_at.
+Primary keys: uuid. All amounts recorded in CRC (Costa Rican colones); use numeric/decimal at persistence layer. Timestamps: created_at/updated_at.
 
 
 
@@ -95,15 +94,15 @@ Suggested routes (examples)
 
 - Prepared products
   - GET /api/products
-  - POST /api/products {name, sku, sale_price, cost_price?}
+  - POST /api/products {name, price, cost_price?}
 
 - Expenses
   - GET /api/expenses
-  - POST /api/expenses {date, raw_product_id, quantity, total_cost, supplier}
+  - POST /api/expenses {date, raw_product_id, quantity, unit_cost, supplier}
 
 - Sales
   - GET /api/sales
-  - POST /api/sales {date, items: [{prepared_product_id, quantity, unit_price}], customer}
+  - POST /api/sales {date, status, items: [{prepared_product_id, quantity, unit_price}], customer}
 
 Validation (high-level)
 - Required fields: names, ids, prices.

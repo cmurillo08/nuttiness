@@ -1,0 +1,83 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://nuttiness.local/schema/phase-1-domain.json",
+  "title": "Phase 1 Domain Schemas",
+  "$defs": {
+    "RawProduct": {
+      "type": "object",
+      "required": ["id", "name", "unit", "unit_price", "unit_size"],
+      "properties": {
+        "id": { "anyOf": [ { "type": "string", "format": "uuid" }, { "type": "string", "minLength": 1 } ] },
+        "name": { "type": "string", "minLength": 1 },
+        "unit": { "type": "string", "minLength": 1 },
+        "unit_price": { "type": "number", "minimum": 0 },
+        "unit_size": { "type": "number", "exclusiveMinimum": 0 },
+        "created_at": { "type": "string", "format": "date-time" },
+        "updated_at": { "type": ["string", "null"], "format": "date-time" }
+      },
+      "additionalProperties": false
+    },
+
+    "PreparedProduct": {
+      "type": "object",
+      "required": ["id", "name", "price", "unit"],
+      "properties": {
+        "id": { "anyOf": [ { "type": "string", "format": "uuid" }, { "type": "string", "minLength": 1 } ] },
+        "name": { "type": "string", "minLength": 1 },
+        "price": { "type": "number", "minimum": 0 },
+        "unit": { "type": "string", "minLength": 1 },
+        "recipe_notes": { "type": "string" },
+        "created_at": { "type": "string", "format": "date-time" },
+        "updated_at": { "type": ["string", "null"], "format": "date-time" }
+      },
+      "additionalProperties": false
+    },
+
+    "Expense": {
+      "type": "object",
+      "required": ["id", "raw_product_id", "quantity", "unit_cost", "purchased_at"],
+      "properties": {
+        "id": { "anyOf": [ { "type": "string", "format": "uuid" }, { "type": "string", "minLength": 1 } ] },
+        "raw_product_id": { "type": "string", "format": "uuid" },
+        "quantity": { "type": "number", "exclusiveMinimum": 0 },
+        "unit_cost": { "type": "number", "minimum": 0 },
+        "purchased_at": { "type": "string", "format": "date-time" },
+        "notes": { "type": "string" },
+        "created_at": { "type": "string", "format": "date-time" },
+        "updated_at": { "type": ["string", "null"], "format": "date-time" }
+      },
+      "additionalProperties": false
+    },
+
+    "SaleItem": {
+      "type": "object",
+      "required": ["id", "sale_id", "prepared_product_id", "quantity", "unit_price", "line_total"],
+      "properties": {
+        "id": { "anyOf": [ { "type": "string", "format": "uuid" }, { "type": "string", "minLength": 1 } ] },
+        "sale_id": { "type": "string", "format": "uuid" },
+        "prepared_product_id": { "type": "string", "format": "uuid" },
+        "quantity": { "type": "number", "exclusiveMinimum": 0 },
+        "unit_price": { "type": "number", "minimum": 0 },
+        "line_total": { "type": "number", "minimum": 0 },
+        "created_at": { "type": "string", "format": "date-time" },
+        "updated_at": { "type": ["string", "null"], "format": "date-time" }
+      },
+      "additionalProperties": false
+    },
+
+    "Sale": {
+      "type": "object",
+      "required": ["id", "status", "total_amount"],
+      "properties": {
+        "id": { "anyOf": [ { "type": "string", "format": "uuid" }, { "type": "string", "minLength": 1 } ] },
+        "customer_name": { "type": "string" },
+        "status": { "type": "string", "enum": ["prepared", "delivered", "paid", "cancelled"] },
+        "total_amount": { "type": "number", "minimum": 0 },
+        "items": { "type": "array", "items": { "$ref": "#/$defs/SaleItem" } },
+        "created_at": { "type": "string", "format": "date-time" },
+        "updated_at": { "type": ["string", "null"], "format": "date-time" }
+      },
+      "additionalProperties": false
+    }
+  }
+}

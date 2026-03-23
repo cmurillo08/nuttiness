@@ -37,6 +37,7 @@ Build the frontend for:
 
 Using:
 * Next.js (App Router)
+* Tailwind CSS for styling (utility-first)
 * Clean, simple UI
 * Fast and usable forms/tables
 
@@ -135,6 +136,11 @@ If feedback is given:
 * Do NOT duplicate domain logic
 * Do NOT hardcode calculations (use backend/domain)
 * Do NOT overengineer state management
+
+## 🎨 Styling
+- Use Tailwind CSS utility classes for layout and styling.
+- Prefer small, composable component classes and avoid large global CSS files.
+- Keep visual styling minimal and consistent with utility-first approach.
 
 ---
 

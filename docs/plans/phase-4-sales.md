@@ -8,7 +8,7 @@ summary: Define sales/orders model, order line items, payments, and API/UI contr
 
 What: Phase 4 specifies the sales (orders) domain: order documents and order lines referencing `PreparedProduct`.
 
-Why: Sales are the primary revenue events. This phase defines the contracts the Domain Agent will use to author business rules (order state transitions and payment/status handling). Inventory is not tracked in these phases.
+Why: Sales are the primary revenue events. This phase defines the contracts the Domain Agent will use to author business rules (order state transitions and payment/status handling). Inventory is not tracked in these phases. All monetary amounts are recorded in CRC (Costa Rican colones).
 
 Files & dependencies
 - Builds on Phase 1 (entities) and Phase 3 (expenses). Domain Agent should coordinate with Expense definitions for consistency; inventory semantics are out of scope for current phases.
@@ -69,7 +69,7 @@ Routes & Example payloads
 
 - Create sale
   - POST /api/sales
-  - Request: {date?, customer?, lines: [{prepared_product_id, quantity, unit_price}], status?: 'draft' }
+  - Request: {date?, customer?, lines: [{prepared_product_id, quantity, unit_price}], status?: 'prepared' }
   - Response: 201 {id, ...}
 
 -- Confirm sale
@@ -79,8 +79,8 @@ Routes & Example payloads
 
 
 Validation (high-level)
-- `lines` required with at least one entry when creating a non-draft sale.
-- Quantities and unit_price must be positive.
+  - `lines` required with at least one entry when creating a non-prepared sale.
+  - Quantities and unit_price must be positive. All monetary amounts are CRC.
 - `prepared_product_id` must reference an existing PreparedProduct.
 
 - ## 6. Frontend Design (pages & components)

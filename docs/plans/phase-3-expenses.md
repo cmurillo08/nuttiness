@@ -36,8 +36,8 @@ Entities
   - expense_id (uuid)
   - raw_product_id (uuid)
   - quantity (decimal)
-  - unit_price (decimal)
-  - line_total (decimal) computed as quantity * unit_price
+  - unit_cost (decimal)
+  - line_total (decimal) computed as quantity * unit_cost
 
 /* InventoryEntry removed — inventory is not tracked in current phases. */
 
@@ -49,6 +49,8 @@ Relationships
 
 -- expenses (id, date, supplier, total_amount, created_at, updated_at)
 -- expense_lines (id, expense_id, raw_product_id, quantity, unit_price, line_total)
+-- expenses (id, date, supplier, total_amount, created_at, updated_at)
+-- expense_lines (id, expense_id, raw_product_id, quantity, unit_cost, line_total)
 
 Primary keys: uuid. Use numeric/decimal for monetary and quantity fields. Timestamps: created_at/updated_at.
 
@@ -65,19 +67,19 @@ Routes & Example payloads
 
 -- Get expense
   - GET /api/expenses/:id
-  - Response: 200 {id, date, supplier, total_amount, lines: [{raw_product_id, quantity, unit_price, line_total}]}
+  - Response: 200 {id, date, supplier, total_amount, lines: [{raw_product_id, quantity, unit_cost, line_total}]}
 
 -- Create expense
   - POST /api/expenses
-  - Request: {date, supplier?, lines: [{raw_product_id, quantity, unit_price}]}
+  - Request: {date, supplier?, lines: [{raw_product_id, quantity, unit_cost}]}
   - Response: 201 {id, ...}
 
 /* Inventory entries endpoint removed — inventory is not tracked in current phases. */
 
 Validation (high-level)
 - `lines` required with at least one entry.
-- Each line's `raw_product_id` must reference an existing RawProduct.
-- Quantities and unit_price must be positive numbers.
+  - Each line's `raw_product_id` must reference an existing RawProduct.
+  - Quantities and `unit_cost` must be positive numbers. All monetary amounts recorded in CRC (Costa Rican colones).
 
 - ## 6. Frontend Design (pages & components)
 

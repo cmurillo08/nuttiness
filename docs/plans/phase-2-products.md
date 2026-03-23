@@ -32,12 +32,11 @@ Entities
   - supplier (string, optional)
   - notes: `RawProduct` is a purchase/catalog list used to record expenses. It is NOT linked to `PreparedProduct`.
 
-- PreparedProduct
+PreparedProduct
   - id (uuid)
   - name (string, required)
-  - sku (string, optional)
   - cost_price (decimal, optional)  # manually entered cost for the item
-  - sale_price (decimal, required)
+  - price (decimal, required)
   - notes: `PreparedProduct` is the sellable catalog. Cost and profit values are stored manually; no automatic recipe linkage to `RawProduct` in this phase.
 
 Derived values (for later phases)
@@ -50,17 +49,17 @@ Principles
 
 Routes & Example payloads
 
-- List products
-  - GET /api/products
-  - Response: 200 [{id, name, sku, sale_price}]
+  - List products
+    - GET /api/products
+    - Response: 200 [{id, name, price}]
 
 -- Get product
   - GET /api/products/:id
-  - Response: 200 {id, name, sku, sale_price, cost_price}
+  - Response: 200 {id, name, price, cost_price}
 
 -- Create prepared product
   - POST /api/products
-  - Request: {name, sku?, sale_price, cost_price?}
+  - Request: {name, price, cost_price?}
   - Response: 201 {id, ...}
 
 -- Update product
@@ -87,8 +86,8 @@ Pages
 - /raw-products — list and manage raw materials
 
 Key components
-- `ProductsTable` — shows name, sku, price, actions
-- `ProductForm` — fields: name, sku, sale_price, cost_price
+- `ProductsTable` — shows name, price, actions
+- `ProductForm` — fields: name, price, cost_price
 
 User flows
 - Create prepared product: open `ProductForm`, enter price/cost fields, save → backend validates input.

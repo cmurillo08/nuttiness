@@ -229,7 +229,7 @@ Validation & error handling notes
 **Frontend Design**
 - Pages / Screens
   - Dashboard (KPIs)
-  - Raw Materials (list, create/edit, detail)
+  - Raw Products (list, create/edit, detail)
   - Products (list, create/edit, detail)
   - Expenses (list, create)
   - Sales (list, create order flow, detail)

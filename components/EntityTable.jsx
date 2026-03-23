@@ -4,13 +4,20 @@ import ConfirmDialog from "./ConfirmDialog"
 import Link from "next/link"
 import Amount from "./Amount"
 
-export default function EntityTable({ endpoint = "/api/products", columns = [], title = "Items", editHrefBase }) {
-  const [items, setItems] = useState([])
-  const [loading, setLoading] = useState(true)
+export default function EntityTable({ endpoint = "/api/products", columns = [], title = "Items", editHrefBase, items: propItems }) {
+  const [items, setItems] = useState(propItems ?? [])
+  const [loading, setLoading] = useState(!propItems)
   const [error, setError] = useState(null)
   const [confirm, setConfirm] = useState({ open: false, id: null })
 
   useEffect(() => {
+    if (propItems) {
+      setItems(propItems)
+      setLoading(false)
+      setError(null)
+      return
+    }
+
     async function fetchItems() {
       setLoading(true)
       setError(null)
@@ -36,7 +43,7 @@ export default function EntityTable({ endpoint = "/api/products", columns = [], 
     }
 
     fetchItems()
-  }, [endpoint])
+  }, [endpoint, propItems])
 
   function requestDelete(id) {
     setConfirm({ open: true, id })
@@ -58,7 +65,7 @@ export default function EntityTable({ endpoint = "/api/products", columns = [], 
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold">{title}</h2>
+        <h2 className="text-xl font-semibold text-primary">{title}</h2>
       </div>
       {loading && <div>Loading…</div>}
       {error && (
@@ -80,28 +87,28 @@ export default function EntityTable({ endpoint = "/api/products", columns = [], 
       {!loading && !items.length && <div className="text-sm text-gray-500">No items found.</div>}
       {items.length > 0 && (
         <div className="overflow-x-auto">
-          <table className="min-w-full table-auto border">
-            <thead className="bg-gray-50">
+          <table className="min-w-full table-auto border border-gray-200 divide-y divide-gray-100">
+            <thead className="bg-primary/10">
               <tr>
                 {columns.map((c) => (
-                  <th key={c.key} className="px-3 py-2 text-left text-sm">
+                  <th key={c.key} className="px-3 py-2 text-left text-sm text-primary font-medium">
                     {c.label}
                   </th>
                 ))}
-                <th className="px-3 py-2 text-left text-sm">Actions</th>
+                <th className="px-3 py-2 text-left text-sm text-primary font-medium">Actions</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="bg-white">
               {items.map((it) => (
-                <tr key={it.id} className="border-t hover:bg-gray-50">
+                <tr key={it.id} className="hover:bg-gray-50">
                   {columns.map((c) => (
-                    <td key={c.key} className="px-3 py-2 text-sm">
+                    <td key={c.key} className="px-3 py-2 text-sm align-top">
                       {c.type === "amount" ? <Amount value={it[c.key]} /> : String(it[c.key] ?? "")}
                     </td>
                   ))}
-                  <td className="px-3 py-2 text-sm">
+                  <td className="px-3 py-2 text-sm align-top">
                     {editHrefBase ? (
-                      <Link className="text-blue-600 mr-2" href={`${editHrefBase}/${it.id}`}>Edit</Link>
+                      <Link className="text-primary mr-2" href={`${editHrefBase}/${it.id}`}>Edit</Link>
                     ) : null}
                     <button className="text-red-600" onClick={() => requestDelete(it.id)}>Delete</button>
                   </td>

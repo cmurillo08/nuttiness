@@ -83,7 +83,7 @@ Pages
 - /products — list of prepared products with filter/search
 - /products/new — create product form
 - /products/[id] — product detail and edit
-- /raw-products — list and manage raw materials
+- /raw-products — list and manage raw products
 
 Key components
 - `ProductsTable` — shows name, price, actions

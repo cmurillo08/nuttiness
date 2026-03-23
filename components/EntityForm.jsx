@@ -1,11 +1,16 @@
 "use client"
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 
-export default function EntityForm({ endpoint, method = "POST", initialData = {}, fields = [], onSuccess }) {
+export default function EntityForm({ endpoint, method = "POST", initialData = {}, fields = [], onSuccess, cancelHref }) {
   const [data, setData] = useState(() => ({ ...initialData }))
   const [errors, setErrors] = useState({})
   const [globalError, setGlobalError] = useState(null)
   const [submitting, setSubmitting] = useState(false)
+  const router = useRouter()
+
+  // derive a sensible cancel href from the API endpoint when not provided
+  const resolvedCancelHref = cancelHref ?? (endpoint && endpoint.startsWith("/api") ? endpoint.replace(/^\/api/, "") : null)
 
   function setField(name, value) {
     setData((d) => ({ ...d, [name]: value }))
@@ -34,10 +39,24 @@ export default function EntityForm({ endpoint, method = "POST", initialData = {}
     if (Object.keys(v).length) return setErrors(v)
     setSubmitting(true)
     try {
+      // Build payload: convert numeric fields to Numbers (4-decimal) and
+      // omit server-managed fields for create requests.
+      const fieldMap = Object.fromEntries(fields.map((f) => [f.name, f]))
+      const payload = {}
+      for (const [k, v] of Object.entries(data)) {
+        if (method === "POST" && (k === "id" || k === "created_at" || k === "updated_at")) continue
+        if (fieldMap[k] && fieldMap[k].type === "number") {
+          const n = Number(v)
+          payload[k] = isNaN(n) ? null : parseFloat(Number(n).toFixed(4))
+        } else {
+          payload[k] = v
+        }
+      }
+
       const res = await fetch(endpoint, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify(payload),
       })
       const body = await res.json().catch(() => ({}))
       if (!res.ok) {
@@ -56,29 +75,42 @@ export default function EntityForm({ endpoint, method = "POST", initialData = {}
 
   return (
     <form onSubmit={submit} className="space-y-4">
-      {globalError && <div className="text-red-600">{globalError}</div>}
+      {globalError && <div className="text-red-600 bg-red-50 p-3 rounded">{globalError}</div>}
       {fields.map((f) => (
         <div key={f.name}>
-          <label className="block text-sm font-medium mb-1">{f.label}</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">{f.label}</label>
           {f.type === "textarea" ? (
-            <textarea value={data[f.name] ?? ""} onChange={(e) => setField(f.name, e.target.value)} className="w-full p-2 border rounded" />
+            <textarea
+              value={data[f.name] ?? ""}
+              onChange={(e) => setField(f.name, e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/30"
+            />
           ) : (
             <input
               type={f.type === "number" ? "number" : "text"}
               value={data[f.name] ?? ""}
-              onChange={(e) => setField(f.name, f.type === "number" ? e.target.value : e.target.value)}
-              className="w-full p-2 border rounded"
+              onChange={(e) => setField(f.name, e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/30"
               min={f.min}
               max={f.max}
               step={f.step}
             />
           )}
-          {errors[f.name] && <div className="text-red-600 text-sm">{errors[f.name]}</div>}
-          {f.hint && <div className="text-xs text-gray-500">{f.hint}</div>}
+          {errors[f.name] && <div className="text-red-600 text-sm mt-1">{errors[f.name]}</div>}
+          {f.hint && <div className="text-xs text-gray-500 mt-1">{f.hint}</div>}
         </div>
       ))}
-      <div>
-        <button type="submit" disabled={submitting} className="px-4 py-2 bg-blue-600 text-white rounded">
+      <div className="flex gap-2">
+        {resolvedCancelHref ? (
+          <button
+            type="button"
+            onClick={() => router.push(resolvedCancelHref)}
+            className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50"
+          >
+            Cancel
+          </button>
+        ) : null}
+        <button type="submit" disabled={submitting} className="px-4 py-2 bg-primary text-white rounded-md hover:opacity-95">
           {submitting ? "Saving…" : "Save"}
         </button>
       </div>

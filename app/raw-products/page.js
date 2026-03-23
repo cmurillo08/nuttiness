@@ -17,7 +17,7 @@ export default function Page() {
       setLoading(true)
       setError(null)
       try {
-        const res = await fetch(`/api/products?limit=${limit}&offset=${offset}`)
+        const res = await fetch(`/api/raw-products?limit=${limit}&offset=${offset}`)
         if (!res.ok) {
           const txt = await res.text()
           throw new Error(txt || `Error ${res.status}`)
@@ -39,8 +39,8 @@ export default function Page() {
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-bold">Products</h1>
-        <Link href="/products/new" className="px-3 py-1 bg-blue-600 text-white rounded">New</Link>
+        <h1 className="text-2xl font-bold">Raw Products</h1>
+        <Link href="/raw-products/new" className="px-3 py-1 bg-blue-600 text-white rounded">New</Link>
       </div>
 
       <div className="mb-4 flex gap-2">
@@ -55,12 +55,12 @@ export default function Page() {
       {loading && <div>Loading…</div>}
       {error && <div className="text-red-600">{error}</div>}
 
-      <EntityTable endpoint={`/api/products?limit=${limit}&offset=${offset}`} items={filtered} columns={[
+      <EntityTable endpoint={`/api/raw-products?limit=${limit}&offset=${offset}`} items={filtered} columns={[
         { key: "name", label: "Name" },
         { key: "unit", label: "Unit" },
-        { key: "price", label: "Price", type: "amount" },
-        { key: "cost_price", label: "Cost", type: "amount" },
-      ]} editHrefBase="/products" />
+        { key: "unit_price", label: "Unit Price", type: "amount" },
+        { key: "unit_size", label: "Size" },
+      ]} editHrefBase="/raw-products" />
 
       <div className="flex items-center gap-2 mt-4">
         <button className="px-3 py-1 border rounded" onClick={() => setOffset(Math.max(0, offset - limit))} disabled={offset === 0}>Prev</button>

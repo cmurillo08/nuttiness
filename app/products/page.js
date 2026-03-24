@@ -39,11 +39,16 @@ export default function Page() {
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-semibold text-primary">Products</h1>
-        <Link href="/products/new" className="px-3 py-2 bg-primary text-white rounded-md">New Product</Link>
+        <div className="flex items-center gap-3">
+          <Link href="/dashboard" title="Back to Dashboard" className="hover:opacity-80 transition-opacity">
+            <img src="/nuttiness-logo.png" alt="Dashboard" className="h-12 w-12 object-contain" />
+          </Link>
+          <h1 className="text-2xl font-semibold text-primary">Products</h1>
+        </div>
+        <Link href="/products/new" className="px-3 py-2 bg-primary text-white rounded-md">New</Link>
       </div>
 
-      <div className="mb-4 flex gap-2 items-center">
+      <div className="mb-4 flex gap-2 items-center flex-wrap">
         <input placeholder="Search by name" value={search} onChange={(e) => setSearch(e.target.value)} className="p-2 border rounded w-full max-w-sm" />
         <select value={limit} onChange={(e) => { setLimit(Number(e.target.value)); setOffset(0) }} className="p-2 border rounded">
           <option value={5}>5</option>
@@ -60,7 +65,7 @@ export default function Page() {
           { key: "name", label: "Name" },
           { key: "unit", label: "Unit" },
           { key: "price", label: "Price", type: "amount" },
-        ]} editHrefBase="/products" />
+        ]} editHrefBase="/products" entityName="Product" />
       </div>
 
       <div className="flex items-center gap-2 mt-4">

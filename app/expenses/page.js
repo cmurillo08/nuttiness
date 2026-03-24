@@ -48,22 +48,25 @@ export default function ExpensesPage() {
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-semibold text-primary">Expenses</h1>
-        <Link href="/expenses/new" className="px-3 py-2 bg-primary text-white rounded-md">New Expense</Link>
+        <div className="flex items-center gap-3">
+          <Link href="/dashboard" title="Back to Dashboard" className="hover:opacity-80 transition-opacity">
+            <img src="/nuttiness-logo.png" alt="Dashboard" className="h-12 w-12 object-contain" />
+          </Link>
+          <h1 className="text-2xl font-semibold text-primary">Expenses</h1>
+        </div>
+        <Link href="/expenses/new" className="px-3 py-2 bg-primary text-white rounded-md">New</Link>
       </div>
 
-      <div className="mb-4 grid grid-cols-1 gap-2 max-w-md">
-        <div>
-          <label className="block text-sm text-gray-700 mb-1">Filter by raw product</label>
-          <RawProductSelect value={filterRawProduct} onChange={setFilterRawProduct} placeholder="All raw products" />
-        </div>
+      <div className="mb-4 flex gap-2 items-center flex-wrap">
+        <label className="text-sm">Raw Product:</label>
+        <RawProductSelect value={filterRawProduct} onChange={setFilterRawProduct} placeholder="All raw products" />
       </div>
 
       {loading && <div>Loading…</div>}
       {error && <div className="text-red-600">{error}</div>}
 
       <div className="bg-white rounded shadow p-4">
-        <EntityTable items={filtered} columns={columns} title="Expenses" editHrefBase="/expenses" />
+        <EntityTable items={filtered} columns={columns} editHrefBase="/expenses" entityName="Expense" />
       </div>
     </div>
   )

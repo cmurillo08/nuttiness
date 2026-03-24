@@ -184,7 +184,7 @@ export default function Page() {
               <tbody className="divide-y divide-gray-100">
                 {lines.map((ln) => (
                   <tr key={ln.id} className={editingLineId === ln.id ? 'bg-yellow-50' : 'hover:bg-gray-50'}>
-                    <td className="px-4 py-3 text-sm">{ln.product_name || '(custom)'}</td>
+                    <td className="px-4 py-3 text-sm">{ln.product_name}{ln.unit ? ` - ${ln.unit}` : ""} {!ln.product_name && !ln.unit ? '(custom)' : ""}</td>
                     {editingLineId === ln.id ? (
                       <>
                         <td className="px-4 py-3 text-sm">

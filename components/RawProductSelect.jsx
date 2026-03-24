@@ -36,7 +36,7 @@ export default function RawProductSelect({ value, onChange, placeholder = "Selec
       >
         <option value="">{loading ? "Loading..." : placeholder}</option>
         {items.map((it) => (
-          <option key={it.id} value={it.id}>{it.name}</option>
+          <option key={it.id} value={it.id}>{it.name} {it.supplier ? `- ${it.supplier}` : ""}</option>
         ))}
       </select>
     </div>

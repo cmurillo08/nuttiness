@@ -36,7 +36,7 @@ export default function PreparedProductSelect({ value, onChange, placeholder = "
       >
         <option value="">{loading ? "Loading..." : placeholder}</option>
         {items.map((it) => (
-          <option key={it.id} value={it.id}>{it.name}</option>
+          <option key={it.id} value={it.id}>{it.name} {it.unit ? `- ${it.unit}` : ""}</option>
         ))}
       </select>
     </div>

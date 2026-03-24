@@ -11,6 +11,7 @@ export async function GET(req, { params }) {
         si.id, 
         si.prepared_product_id, 
         pp.name as product_name,
+        pp.unit,
         si.quantity, 
         si.unit_price, 
         si.line_total 

@@ -10,7 +10,7 @@ export async function GET(req) {
 
   return await withClient(async (client) => {
     const q = `
-      SELECT e.*, json_build_object('id', rp.id, 'name', rp.name, 'price', rp.price) AS raw_product
+      SELECT e.*, json_build_object('id', rp.id, 'name', rp.name, 'price', rp.price, 'supplier', rp.supplier) AS raw_product
       FROM expenses e
       LEFT JOIN raw_products rp ON e.raw_product_id = rp.id
       ORDER BY purchased_at DESC

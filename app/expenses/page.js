@@ -20,7 +20,12 @@ export default function ExpensesPage() {
         if (!res.ok) throw new Error(`Failed to load expenses: ${res.status}`)
         let data = await res.json()
         if (!Array.isArray(data)) data = []
-        const mapped = data.map((it) => ({ ...it, raw_product_name: it.raw_product?.name ?? it.raw_product_name ?? "" }))
+        const mapped = data.map((it) => ({
+          ...it,
+          raw_product_name: it.raw_product?.name ?? it.raw_product_name ?? "",
+          raw_product_display: `${it.raw_product?.name ?? it.raw_product_name ?? ""} ${it.raw_product?.supplier ? `- ${it.raw_product.supplier}` : ""}`,
+          purchased_at_display: it.purchased_at ? new Date(it.purchased_at).toLocaleString() : '-'
+        }))
         if (mounted) setItems(mapped)
       } catch (err) {
         if (mounted) setError(String(err))
@@ -33,8 +38,8 @@ export default function ExpensesPage() {
   }, [])
 
   const columns = [
-    { key: "purchased_at", label: "Purchased At" },
-    { key: "raw_product_name", label: "Raw product" },
+    { key: "purchased_at_display", label: "Purchased At" },
+    { key: "raw_product_display", label: "Raw Product" },
     { key: "quantity", label: "Quantity" },
     { key: "cost", label: "Cost", type: "amount" },
     { key: "notes", label: "Notes" },

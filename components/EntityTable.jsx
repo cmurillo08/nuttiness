@@ -4,11 +4,21 @@ import ConfirmDialog from "./ConfirmDialog"
 import Link from "next/link"
 import Amount from "./Amount"
 
-export default function EntityTable({ endpoint = "/api/products", columns = [], title = "Items", editHrefBase, items: propItems }) {
+export default function EntityTable({ endpoint = "/api/products", columns = [], editHrefBase, entityName = "Item", items: propItems }) {
   const [items, setItems] = useState(propItems ?? [])
   const [loading, setLoading] = useState(!propItems)
   const [error, setError] = useState(null)
   const [confirm, setConfirm] = useState({ open: false, id: null })
+
+  // Pluralize entity name
+  function pluralize(name) {
+    const words = name.split(' ')
+    const lastWord = words[words.length - 1]
+    const pluralLast = lastWord.endsWith('y') ? lastWord.slice(0, -1) + 'ies' : lastWord + 's'
+    return words.length > 1 ? [...words.slice(0, -1), pluralLast].join(' ') : pluralLast
+  }
+
+  const pluralEntityName = pluralize(entityName)
 
   useEffect(() => {
     if (propItems) {
@@ -66,7 +76,7 @@ export default function EntityTable({ endpoint = "/api/products", columns = [], 
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold text-primary">{title}</h2>
+        <h2 className="text-xl font-semibold text-primary">{pluralEntityName}</h2>
       </div>
       {loading && <div>Loading…</div>}
       {error && (
@@ -96,11 +106,19 @@ export default function EntityTable({ endpoint = "/api/products", columns = [], 
                       {c.type === "amount" ? <Amount value={it[c.key]} /> : String(it[c.key] ?? "")}
                     </td>
                   ))}
-                  <td className="px-3 py-2 text-sm align-top">
+                  <td className="px-3 py-2 text-sm align-top flex gap-2">
                     {editHrefBase ? (
-                      <Link className="text-primary mr-2" href={`${editHrefBase}/${it.id}`}>Edit</Link>
+                      <Link className="text-primary hover:text-primary/80 transition-colors" title="Edit" href={`${editHrefBase}/${it.id}`}>
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                      </Link>
                     ) : null}
-                    <button className="text-red-600" onClick={() => requestDelete(it.id)}>Delete</button>
+                    <button className="text-red-600 hover:text-red-700 transition-colors" title="Delete" onClick={() => requestDelete(it.id)}>
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -109,8 +127,8 @@ export default function EntityTable({ endpoint = "/api/products", columns = [], 
         </div>
       )}
 
-      <ConfirmDialog open={confirm.open} title="Delete item" onCancel={() => setConfirm({ open: false, id: null })} onConfirm={doDelete}>
-        Are you sure you want to delete this item?
+      <ConfirmDialog open={confirm.open} title={`Delete ${entityName}`} onCancel={() => setConfirm({ open: false, id: null })} onConfirm={doDelete}>
+        Are you sure you want to delete this {entityName.toLowerCase()}?
       </ConfirmDialog>
     </div>
   )

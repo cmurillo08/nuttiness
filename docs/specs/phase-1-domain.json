@@ -49,6 +49,28 @@
       "additionalProperties": false
     },
 
+    "SaleItemCreate": {
+      "type": "object",
+      "required": ["quantity", "unit_price"],
+      "properties": {
+        "prepared_product_id": { "anyOf": [ { "type": "string", "format": "uuid" }, { "type": "null" } ] },
+        "quantity": { "type": "number", "exclusiveMinimum": 0 },
+        "unit_price": { "type": "number", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+
+    "SaleCreate": {
+      "type": "object",
+      "required": ["lines"],
+      "properties": {
+        "customer_name": { "anyOf": [ { "type": "string" }, { "type": "null" } ] },
+        "status": { "type": "string", "enum": ["prepared", "delivered", "paid", "cancelled"] },
+        "lines": { "type": "array", "items": { "$ref": "#/$defs/SaleItemCreate" } }
+      },
+      "additionalProperties": false
+    },
+
     "SaleItem": {
       "type": "object",
       "required": ["id", "sale_id", "prepared_product_id", "quantity", "unit_price", "line_total"],

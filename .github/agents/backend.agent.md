@@ -6,7 +6,7 @@ tools:
   - edit
   - search
   - todo
-model: GPT-5 mini (copilot)
+model: Claude Haiku 4.5 (copilot)
 ---
 
 ## ⚙️ Role

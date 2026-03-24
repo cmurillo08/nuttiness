@@ -7,7 +7,7 @@ tools:
   - search
   - todo
   - agent
-model: GPT-5 mini (copilot)
+model: Claude Haiku 4.5 (copilot)
 agents: ["Domain Agent", "Backend Agent", "Frontend Agent"]
 ---
 

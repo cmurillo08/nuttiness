@@ -1,12 +1,15 @@
 import { withClient } from '../../../lib/db';
 import validators from '../../../lib/validators';
 import errors from '../../../lib/errors';
+import pagination from '../../../lib/pagination';
 
 export async function GET(req) {
   const url = new URL(req.url);
-  const rawLimit = parseInt(url.searchParams.get('limit') || '100', 10) || 100;
-  const limit = Math.min(rawLimit, 1000);
-  const offset = parseInt(url.searchParams.get('offset') || '0', 10) || 0;
+  const { limit, offset, errors: paginationErrors } = pagination.parsePaginationParams(url);
+  
+  if (paginationErrors) {
+    return errors.badRequest(paginationErrors);
+  }
 
   return await withClient(async (client) => {
     const q = `
@@ -17,7 +20,9 @@ export async function GET(req) {
       LIMIT $1 OFFSET $2
     `
     const res = await client.query(q, [limit, offset]);
-    return errors.json(res.rows, 200);
+    const totalRes = await client.query('SELECT COUNT(*) FROM expenses');
+    const total = Number(totalRes.rows[0].count || 0);
+    return errors.json(pagination.buildPaginationResponse(res.rows, total, limit, offset), 200);
   });
 }
 

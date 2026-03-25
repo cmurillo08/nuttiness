@@ -231,6 +231,9 @@ export default function Page() {
       {error && <div className="text-red-600 bg-red-50 p-3 rounded mt-4">{error}</div>}
 
       <div className="flex gap-2 mt-6">
+        {sale.status === 'ordered' && (
+          <button onClick={() => doTransition('prepared')} disabled={busy || lines.length === 0} className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 disabled:opacity-60 transition-colors">Mark Prepared</button>
+        )}
         {sale.status === 'prepared' && (
           <button onClick={() => doTransition('delivered')} disabled={busy || lines.length === 0} className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-60 transition-colors">Mark Delivered</button>
         )}

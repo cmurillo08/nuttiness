@@ -25,6 +25,7 @@ export default function Page() {
   }, [])
 
   const cards = [
+    { title: "Reports", count: "", href: "/reports", bgColor: "bg-indigo-50", textColor: "text-indigo-900", borderColor: "border-indigo-200", teaser: "View financial summary" },
     { title: "Sales", count: stats.sales, href: "/sales", bgColor: "bg-amber-50", textColor: "text-amber-900", borderColor: "border-amber-200", total: stats.totalSalesAmount },
     { title: "Expenses", count: stats.expenses, href: "/expenses", bgColor: "bg-red-50", textColor: "text-red-900", borderColor: "border-red-200", total: stats.totalExpensesCost },
     { title: "Customers", count: stats.customers, href: "/customers", bgColor: "bg-purple-50", textColor: "text-purple-900", borderColor: "border-purple-200" },
@@ -56,11 +57,17 @@ export default function Page() {
                     <div className="flex items-center justify-between">
                       <div>
                         <div className={`text-sm font-medium ${card.textColor}`}>{card.title}</div>
-                        <div className={`text-3xl font-bold ${card.textColor}`}>{card.count}</div>
-                        {card.total !== undefined && (
-                          <div className={`text-xs ${card.textColor}/70 mt-1`}>
-                            Total: <Amount value={card.total} />
-                          </div>
+                        {card.teaser ? (
+                          <div className={`text-sm ${card.textColor}/80 mt-2`}>{card.teaser}</div>
+                        ) : (
+                          <>
+                            <div className={`text-3xl font-bold ${card.textColor}`}>{card.count}</div>
+                            {card.total !== undefined && (
+                              <div className={`text-xs ${card.textColor}/70 mt-1`}>
+                                Total: <Amount value={card.total} />
+                              </div>
+                            )}
+                          </>
                         )}
                       </div>
                     </div>

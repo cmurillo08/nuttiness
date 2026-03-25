@@ -2,14 +2,16 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import EntityTable from "../../components/EntityTable"
+import Pagination from "../../components/Pagination"
 
 export default function Page() {
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [search, setSearch] = useState("")
-  const [limit, setLimit] = useState(10)
+  const [limit, setLimit] = useState(25)
   const [offset, setOffset] = useState(0)
+  const [total, setTotal] = useState(0)
 
   useEffect(() => {
     let mounted = true
@@ -23,8 +25,20 @@ export default function Page() {
           throw new Error(txt || `Error ${res.status}`)
         }
         const data = await res.json()
-        const customersList = Array.isArray(data) ? data : (data?.customers || [])
-        if (mounted) setItems(customersList)
+        if (mounted) {
+          // Handle both wrapped {items, total} and direct array responses
+          if (Array.isArray(data)) {
+            setItems(data)
+            setTotal(data.length)
+          } else if (data && typeof data === 'object') {
+            const customersList = Array.isArray(data.items) ? data.items : (Array.isArray(data.customers) ? data.customers : [])
+            setItems(customersList)
+            setTotal(typeof data.total === 'number' ? data.total : customersList.length)
+          } else {
+            setItems([])
+            setTotal(0)
+          }
+        }
       } catch (e) {
         if (mounted) setError(String(e))
       } finally {
@@ -51,34 +65,34 @@ export default function Page() {
 
       <div className="mb-4 flex gap-2 items-center flex-wrap">
         <input placeholder="Search by name" value={search} onChange={(e) => setSearch(e.target.value)} className="p-2 border rounded w-full max-w-sm" />
-        <select value={limit} onChange={(e) => { setLimit(parseInt(e.target.value)); setOffset(0) }} className="px-2 py-2 border rounded">
-          <option value={5}>5</option>
-          <option value={10}>10</option>
-          <option value={25}>25</option>
-        </select>
       </div>
 
       {loading && <div>Loading…</div>}
       {error && <div className="text-red-600">{error}</div>}
 
-      <div className="bg-white rounded shadow p-4">
+      <div style={{ overflow: 'hidden' }}>
         <EntityTable 
-          items={filtered} 
-          columns={[
-            { key: "name", label: "Name" },
-            { key: "phone", label: "Phone" },
-            { key: "notes", label: "Notes" },
-          ]}
-          editHrefBase="/customers"
-          entityName="Customer"
-        />
+            items={filtered} 
+            columns={[
+              { key: "name", label: "Name" },
+              { key: "phone", label: "Phone" },
+              { key: "notes", label: "Notes" },
+            ]}
+            editHrefBase="/customers"
+            entityName="Customer"
+          />
       </div>
 
-      <div className="flex items-center gap-2 mt-4">
-        <button className="px-3 py-1 border rounded" onClick={() => setOffset(Math.max(0, offset - limit))} disabled={offset === 0}>Prev</button>
-        <div className="text-sm">Offset: {offset}</div>
-        <button className="px-3 py-1 border rounded" onClick={() => setOffset(offset + limit)}>Next</button>
-      </div>
+      <Pagination
+        total={total}
+        limit={limit}
+        offset={offset}
+        onLimitChange={(newLimit) => {
+          setLimit(newLimit)
+          setOffset(0)
+        }}
+        onOffsetChange={setOffset}
+      />
     </div>
   )
 }

@@ -1,14 +1,48 @@
 "use client"
 import { useEffect, useState } from "react"
 import Link from "next/link"
+import EntityTable from "../../components/EntityTable"
 import Amount from "../../components/Amount"
 import StatusBadge from "../../components/StatusBadge"
+import Pagination from "../../components/Pagination"
+
+function SalesTable({ items: propItems }) {
+  return (
+    <>
+      {propItems?.length > 0 && (
+        <EntityTable 
+          items={propItems}
+          columns={[
+            { 
+              key: "created_at", 
+              label: "Created",
+              render: (it) => it.created_at ? new Date(it.created_at).toLocaleDateString() : '-'
+            },
+            { key: "customer_name", label: "Customer" },
+            { 
+              key: "status", 
+              label: "Status",
+              render: (it) => <StatusBadge status={it.status} />
+            },
+            { 
+              key: "total_amount", 
+              label: "Total",
+              type: "amount"
+            },
+          ]}
+          viewHrefBase="/sales"
+          entityName="Sale"
+        />
+      )}
+    </>
+  )
+}
 
 export default function Page() {
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
-  const [limit] = useState(10)
+  const [limit, setLimit] = useState(25)
   const [offset, setOffset] = useState(0)
   const [total, setTotal] = useState(0)
   const [status, setStatus] = useState("")
@@ -24,7 +58,7 @@ export default function Page() {
       const res = await fetch(`/api/sales?${qs.toString()}`)
       if (!res.ok) throw new Error(`Fetch failed: ${res.status}`)
       const body = await res.json()
-      setItems(body.data || [])
+      setItems(body.data || body.items || [])
       setTotal(Number(body.total || 0))
     } catch (e) {
       setError(String(e))
@@ -36,7 +70,7 @@ export default function Page() {
   useEffect(() => {
     fetchPage()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [offset, status])
+  }, [offset, status, limit])
 
   return (
     <div className="p-6">
@@ -67,51 +101,18 @@ export default function Page() {
 
       {!loading && !items.length && <div className="text-sm text-gray-500">No sales found.</div>}
 
-      {items.length > 0 && (
-        <div className="overflow-x-auto">
-          <table className="min-w-full table-auto border border-gray-200 divide-y divide-gray-100">
-            <thead className="bg-primary/10">
-              <tr>
-                <th className="px-3 py-2 text-left text-sm font-medium">Created</th>
-                <th className="px-3 py-2 text-left text-sm font-medium">Customer</th>
-                <th className="px-3 py-2 text-left text-sm font-medium">Status</th>
-                <th className="px-3 py-2 text-left text-sm font-medium">Total</th>
-                <th className="px-3 py-2 text-left text-sm font-medium">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white">
-              {items.map((it) => (
-                <tr key={it.id} className="hover:bg-gray-50">
-                  <td className="px-3 py-2 text-sm">{it.created_at ? new Date(it.created_at).toLocaleString() : ''}</td>
-                  <td className="px-3 py-2 text-sm">{it.customer_name || '-'}</td>
-                  <td className="px-3 py-2 text-sm">
-                    <StatusBadge status={it.status} />
-                  </td>
-                  <td className="px-3 py-2 text-sm font-medium">
-                    <Amount value={it.total_amount} />
-                  </td>
-                  <td className="px-3 py-2 text-sm">
-                    <Link href={`/sales/${it.id}`} className="text-primary hover:text-primary/80 transition-colors" title="View">
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                      </svg>
-                    </Link>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+      {items.length > 0 && <SalesTable items={items} />}
 
-      <div className="flex items-center justify-between mt-4">
-        <div className="text-sm">Showing {items.length} of {total}</div>
-        <div className="flex gap-2">
-          <button onClick={() => setOffset(Math.max(0, offset - limit))} disabled={offset === 0} className="px-3 py-1 border rounded disabled:opacity-60">Prev</button>
-          <button onClick={() => setOffset(offset + limit)} disabled={offset + limit >= total} className="px-3 py-1 border rounded disabled:opacity-60">Next</button>
-        </div>
-      </div>
+      <Pagination
+        total={total}
+        limit={limit}
+        offset={offset}
+        onLimitChange={(newLimit) => {
+          setLimit(newLimit)
+          setOffset(0)
+        }}
+        onOffsetChange={setOffset}
+      />
     </div>
   )
 }

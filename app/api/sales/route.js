@@ -1,6 +1,7 @@
 import { withClient, runTransaction } from '../../../lib/db';
 import validators from '../../../lib/validators';
 import errors from '../../../lib/errors';
+import pagination from '../../../lib/pagination';
 
 function roundTwo(n) {
   return Number(Number(n).toFixed(2));
@@ -8,9 +9,12 @@ function roundTwo(n) {
 
 export async function GET(req) {
   const url = new URL(req.url);
-  const rawLimit = parseInt(url.searchParams.get('limit') || '100', 10) || 100;
-  const limit = Math.min(rawLimit, 1000);
-  const offset = parseInt(url.searchParams.get('offset') || '0', 10) || 0;
+  const { limit, offset, errors: paginationErrors } = pagination.parsePaginationParams(url);
+  
+  if (paginationErrors) {
+    return errors.badRequest(paginationErrors);
+  }
+  
   const status = url.searchParams.get('status');
 
   return await withClient(async (client) => {
@@ -24,7 +28,7 @@ export async function GET(req) {
     const res = await client.query(q, params);
     const totalQ = status ? await client.query('SELECT COUNT(*) FROM sales WHERE status = $1', [status]) : await client.query('SELECT COUNT(*) FROM sales');
     const total = Number(totalQ.rows[0].count || 0);
-    return errors.json({ data: res.rows, limit, offset, total }, 200);
+    return errors.json(pagination.buildPaginationResponse(res.rows, total, limit, offset), 200);
   });
 }
 

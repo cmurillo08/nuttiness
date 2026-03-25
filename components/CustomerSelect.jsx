@@ -12,14 +12,22 @@ export default function CustomerSelect({ value, onChange, placeholder = "Select 
   const dropdownRef = useRef(null)
   const inputRef = useRef(null)
 
+  const extractCustomers = (data) => {
+    if (Array.isArray(data)) return data
+    if (Array.isArray(data?.items)) return data.items
+    if (Array.isArray(data?.customers)) return data.customers
+    if (Array.isArray(data?.data)) return data.data
+    return []
+  }
+
   const fetchItems = async (mounted = true) => {
     setLoading(true)
     setError(null)
     try {
-      const res = await fetch("/api/customers")
+      const res = await fetch("/api/customers?limit=100&offset=0")
       if (!res.ok) throw new Error(`Failed to load customers: ${res.status}`)
       const data = await res.json()
-      const customersList = Array.isArray(data) ? data : (data?.customers || [])
+      const customersList = extractCustomers(data)
       if (mounted) setItems(customersList)
     } catch (err) {
       setError(String(err))
@@ -69,9 +77,9 @@ export default function CustomerSelect({ value, onChange, placeholder = "Select 
         return
       }
       // Refresh list and select the new customer
-      const updatedRes = await fetch("/api/customers")
+      const updatedRes = await fetch("/api/customers?limit=100&offset=0")
       const updatedData = await updatedRes.json()
-      const customersList = Array.isArray(updatedData) ? updatedData : (updatedData?.customers || [])
+      const customersList = extractCustomers(updatedData)
       setItems(customersList)
       onChange && onChange(data.id)
       setNewCustomerName("")

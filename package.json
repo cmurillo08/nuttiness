@@ -11,7 +11,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
-    ,"test:backend": "node tests/test_migrations_and_sales.js"
+    ,"test:backend": "node tests/test_migrations_and_sales.js",
+    "backup:db": "node scripts/backup-db.js",
+    "restore:db": "node scripts/restore-db.js"
   },
   "dependencies": {
     "next": "^15.5.14",

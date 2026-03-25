@@ -54,6 +54,7 @@ export default function Page() {
         <label className="text-sm">Status:</label>
         <select value={status} onChange={(e) => { setOffset(0); setStatus(e.target.value) }} className="p-2 border rounded">
           <option value="">All</option>
+          <option value="ordered">ordered</option>
           <option value="prepared">prepared</option>
           <option value="delivered">delivered</option>
           <option value="paid">paid</option>

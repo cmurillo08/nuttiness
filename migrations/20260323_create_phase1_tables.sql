@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS expenses (
 CREATE TABLE IF NOT EXISTS sales (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   customer_name text,
-  status text NOT NULL CHECK (status IN ('prepared','delivered','paid','cancelled')),
+  status text NOT NULL CHECK (status IN ('ordered', 'prepared','delivered','paid','cancelled')),
   total_amount numeric(12,2) NOT NULL CHECK (total_amount >= 0),
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz

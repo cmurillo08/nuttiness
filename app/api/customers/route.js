@@ -1,19 +1,24 @@
 import { withClient } from '../../../lib/db';
 import validators from '../../../lib/validators';
 import errors from '../../../lib/errors';
+import pagination from '../../../lib/pagination';
 
 export async function GET(req) {
   const url = new URL(req.url);
-  const rawLimit = parseInt(url.searchParams.get('limit') || '100', 10) || 100;
-  const limit = Math.min(rawLimit, 1000);
-  const offset = parseInt(url.searchParams.get('offset') || '0', 10) || 0;
+  const { limit, offset, errors: paginationErrors } = pagination.parsePaginationParams(url);
+  
+  if (paginationErrors) {
+    return errors.badRequest(paginationErrors);
+  }
 
   return await withClient(async (client) => {
     const res = await client.query(
       'SELECT id, name, phone, notes, created_at, updated_at FROM customers ORDER BY created_at DESC LIMIT $1 OFFSET $2',
       [limit, offset]
     );
-    return errors.json({ customers: res.rows }, 200);
+    const totalRes = await client.query('SELECT COUNT(*) FROM customers');
+    const total = Number(totalRes.rows[0].count || 0);
+    return errors.json(pagination.buildPaginationResponse(res.rows, total, limit, offset), 200);
   });
 }
 

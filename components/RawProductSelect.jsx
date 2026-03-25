@@ -6,16 +6,23 @@ export default function RawProductSelect({ value, onChange, placeholder = "Selec
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
+  const extractItems = (data) => {
+    if (Array.isArray(data)) return data
+    if (Array.isArray(data?.items)) return data.items
+    if (Array.isArray(data?.data)) return data.data
+    return []
+  }
+
   useEffect(() => {
     let mounted = true
     async function fetchItems() {
       setLoading(true)
       setError(null)
       try {
-        const res = await fetch("/api/raw-products")
+        const res = await fetch("/api/raw-products?limit=100&offset=0")
         if (!res.ok) throw new Error(`Failed to load raw products: ${res.status}`)
         const data = await res.json()
-        if (mounted) setItems(Array.isArray(data) ? data : [])
+        if (mounted) setItems(extractItems(data))
       } catch (err) {
         setError(String(err))
       } finally {
@@ -36,7 +43,7 @@ export default function RawProductSelect({ value, onChange, placeholder = "Selec
       >
         <option value="">{loading ? "Loading..." : placeholder}</option>
         {items.map((it) => (
-          <option key={it.id} value={it.id}>{it.name}</option>
+          <option key={it.id} value={it.id}>{it.name} {it.supplier ? `- ${it.supplier}` : ""}</option>
         ))}
       </select>
     </div>

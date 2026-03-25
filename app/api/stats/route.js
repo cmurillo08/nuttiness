@@ -7,6 +7,8 @@ export async function GET() {
     const expenseCount = await query('SELECT COUNT(*) as count FROM expenses')
     const salesCount = await query('SELECT COUNT(*) as count FROM sales')
     const customerCount = await query('SELECT COUNT(*) as count FROM customers')
+    const expenseTotal = await query('SELECT COALESCE(SUM(cost), 0) as total FROM expenses')
+    const salesTotal = await query('SELECT COALESCE(SUM(total_amount), 0) as total FROM sales WHERE status = \'paid\'')
 
     console.log('Product count result:', productCount.rows)
     console.log('Raw product count result:', rawProductCount.rows)
@@ -17,6 +19,8 @@ export async function GET() {
       expenses: expenseCount.rows[0]?.count ? parseInt(expenseCount.rows[0].count) : 0,
       sales: salesCount.rows[0]?.count ? parseInt(salesCount.rows[0].count) : 0,
       customers: customerCount.rows[0]?.count ? parseInt(customerCount.rows[0].count) : 0,
+      totalExpensesCost: parseFloat(expenseTotal.rows[0]?.total || 0),
+      totalSalesAmount: parseFloat(salesTotal.rows[0]?.total || 0),
     })
   } catch (err) {
     console.error('Stats error:', err)

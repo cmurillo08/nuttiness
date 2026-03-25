@@ -10,7 +10,7 @@ export default function OrderBuilder({ onSuccess }) {
   const [lines, setLines] = useState([])
   const [error, setError] = useState(null)
   const [submitting, setSubmitting] = useState(false)
-  const [status, setStatus] = useState('prepared')
+  const [status, setStatus] = useState('ordered')
   const [customerId, setCustomerId] = useState(null)
   
   // Form state for adding new line
@@ -207,6 +207,7 @@ export default function OrderBuilder({ onSuccess }) {
           <div className="flex items-center gap-2">
             <label className="text-sm">Initial status</label>
             <select value={status} onChange={(e) => setStatus(e.target.value)} className="px-2 py-1 border rounded">
+              <option value="ordered">ordered</option>
               <option value="prepared">prepared</option>
               <option value="delivered">delivered</option>
               <option value="paid">paid</option>
@@ -216,7 +217,7 @@ export default function OrderBuilder({ onSuccess }) {
         </div>
         {lines.length === 0 && <div className="text-sm text-gray-500">No lines. Add products above.</div>}
         {lines.map((l) => (
-          <div key={l.id} className="flex items-center gap-2 p-3 border rounded mb-2 bg-gray-50">
+          <div key={l.id} className="flex items-start gap-3 p-3 border rounded mb-2 bg-gray-50">
             <div className="flex-1">
               <div className="font-medium">
                 {l.product_name || <input placeholder="Name" value={l.product_name} onChange={(e) => updateLine(l.id, { product_name: e.target.value })} className="px-2 py-1 border rounded w-48" />}
@@ -229,8 +230,10 @@ export default function OrderBuilder({ onSuccess }) {
                 <div className="ml-auto font-medium">Line: <Amount value={Number(l.qty || 0) * Number(l.unit_price || 0)} /></div>
               </div>
             </div>
-            <button onClick={() => removeLine(l.id)} className="text-red-600 font-medium hover:text-red-800">
-              Remove
+            <button onClick={() => removeLine(l.id)} className="text-red-600 hover:text-red-700 transition-colors flex-shrink-0 p-1" title="Delete">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
             </button>
           </div>
         ))}

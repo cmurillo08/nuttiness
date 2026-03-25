@@ -1,23 +1,28 @@
 import { withClient } from '../../../lib/db';
 import validators from '../../../lib/validators';
 import errors from '../../../lib/errors';
+import pagination from '../../../lib/pagination';
 
 export async function GET(req) {
   const url = new URL(req.url);
-  const rawLimit = parseInt(url.searchParams.get('limit') || '100', 10) || 100;
-  const limit = Math.min(rawLimit, 1000);
-  const offset = parseInt(url.searchParams.get('offset') || '0', 10) || 0;
+  const { limit, offset, errors: paginationErrors } = pagination.parsePaginationParams(url);
+  
+  if (paginationErrors) {
+    return errors.badRequest(paginationErrors);
+  }
 
   return await withClient(async (client) => {
     const q = `
-      SELECT e.*, json_build_object('id', rp.id, 'name', rp.name, 'price', rp.price) AS raw_product
+      SELECT e.*, json_build_object('id', rp.id, 'name', rp.name, 'price', rp.price, 'supplier', rp.supplier) AS raw_product
       FROM expenses e
       LEFT JOIN raw_products rp ON e.raw_product_id = rp.id
       ORDER BY purchased_at DESC
       LIMIT $1 OFFSET $2
     `
     const res = await client.query(q, [limit, offset]);
-    return errors.json(res.rows, 200);
+    const totalRes = await client.query('SELECT COUNT(*) FROM expenses');
+    const total = Number(totalRes.rows[0].count || 0);
+    return errors.json(pagination.buildPaginationResponse(res.rows, total, limit, offset), 200);
   });
 }
 

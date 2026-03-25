@@ -184,7 +184,7 @@ export default function Page() {
               <tbody className="divide-y divide-gray-100">
                 {lines.map((ln) => (
                   <tr key={ln.id} className={editingLineId === ln.id ? 'bg-yellow-50' : 'hover:bg-gray-50'}>
-                    <td className="px-4 py-3 text-sm">{ln.product_name || '(custom)'}</td>
+                    <td className="px-4 py-3 text-sm">{ln.product_name}{ln.unit ? ` - ${ln.unit}` : ""} {!ln.product_name && !ln.unit ? '(custom)' : ""}</td>
                     {editingLineId === ln.id ? (
                       <>
                         <td className="px-4 py-3 text-sm">
@@ -231,6 +231,9 @@ export default function Page() {
       {error && <div className="text-red-600 bg-red-50 p-3 rounded mt-4">{error}</div>}
 
       <div className="flex gap-2 mt-6">
+        {sale.status === 'ordered' && (
+          <button onClick={() => doTransition('prepared')} disabled={busy || lines.length === 0} className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 disabled:opacity-60 transition-colors">Mark Prepared</button>
+        )}
         {sale.status === 'prepared' && (
           <button onClick={() => doTransition('delivered')} disabled={busy || lines.length === 0} className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-60 transition-colors">Mark Delivered</button>
         )}

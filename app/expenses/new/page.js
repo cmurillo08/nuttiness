@@ -5,6 +5,9 @@ import { useRouter } from "next/navigation"
 export default function NewExpensePage() {
   const router = useRouter()
 
+  // Get today's date in YYYY-MM-DD format
+  const today = new Date().toISOString().slice(0, 10)
+
   async function handleSuccess(body) {
     // After creating an expense, return to the expenses list
     router.push(`/expenses`)
@@ -17,7 +20,7 @@ export default function NewExpensePage() {
       </div>
       <div className="max-w-2xl">
         <div className="bg-white rounded shadow p-6">
-          <ExpenseForm endpoint="/api/expenses" method="POST" onSuccess={handleSuccess} cancelHref="/expenses" />
+          <ExpenseForm endpoint="/api/expenses" method="POST" initialData={{ purchased_at: today }} onSuccess={handleSuccess} cancelHref="/expenses" />
         </div>
       </div>
     </div>

@@ -1,6 +1,6 @@
-import { withClient } from '../../../../lib/db';
 import validators from '../../../../lib/validators';
 import errors from '../../../../lib/errors';
+import { deleteCustomerById, getCustomerById, updateCustomerById } from '../../../../lib/db/queries/customers';
 
 function isUuid(id) {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
@@ -10,14 +10,9 @@ export async function GET(req, { params }) {
   const { id } = await params;
   if (!isUuid(id)) return errors.badRequest([{ message: 'Invalid id format' }]);
 
-  return await withClient(async (client) => {
-    const r = await client.query(
-      'SELECT id, name, phone, notes, created_at, updated_at FROM customers WHERE id = $1',
-      [id]
-    );
-    if (r.rowCount === 0) return errors.notFound('Customer not found');
-    return errors.json(r.rows[0], 200);
-  });
+  const customer = await getCustomerById(id);
+  if (!customer) return errors.notFound('Customer not found');
+  return errors.json(customer, 200);
 }
 
 export async function PUT(req, { params }) {
@@ -28,27 +23,21 @@ export async function PUT(req, { params }) {
   const valid = validators.UpdateCustomer(body);
   if (!valid) return errors.badRequest(validators.formatErrors(validators.UpdateCustomer.errors));
 
-  return await withClient(async (client) => {
-    try {
-      const q = `UPDATE customers SET name=$2, phone=$3, notes=$4, updated_at=now() WHERE id=$1 RETURNING id, name, phone, notes, created_at, updated_at`;
-      const vals = [id, body.name, body.phone || null, body.notes || null];
-      const r = await client.query(q, vals);
-      if (r.rowCount === 0) return errors.notFound('Customer not found');
-      return errors.json(r.rows[0], 200);
-    } catch (err) {
-      if (err.code === '23505') return errors.conflict('Customer name already exists');
-      throw err;
-    }
-  });
+  try {
+    const customer = await updateCustomerById(id, body);
+    if (!customer) return errors.notFound('Customer not found');
+    return errors.json(customer, 200);
+  } catch (err) {
+    if (err.code === '23505') return errors.conflict('Customer name already exists');
+    throw err;
+  }
 }
 
 export async function DELETE(req, { params }) {
   const { id } = await params;
   if (!isUuid(id)) return errors.badRequest([{ message: 'Invalid id format' }]);
 
-  return await withClient(async (client) => {
-    const r = await client.query('DELETE FROM customers WHERE id=$1 RETURNING *', [id]);
-    if (r.rowCount === 0) return errors.notFound('Customer not found');
-    return errors.json({}, 204);
-  });
+  const customer = await deleteCustomerById(id);
+  if (!customer) return errors.notFound('Customer not found');
+  return errors.json({}, 204);
 }

@@ -134,7 +134,7 @@ export default function Page() {
   if (!sale) return <div className="p-6">Sale not found.</div>
 
   const lines = Array.isArray(sale.lines) ? sale.lines : []
-  const canEdit = sale.status === 'prepared'
+  const canEdit = sale.status === 'ordered' || sale.status === 'prepared'
 
   return (
     <div className="p-6">

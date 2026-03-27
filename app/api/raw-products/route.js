@@ -1,7 +1,8 @@
-import { withClient } from '../../../lib/db';
 import validators from '../../../lib/validators';
 import errors from '../../../lib/errors';
 import pagination from '../../../lib/pagination';
+import { toFiniteNumber } from '../../../lib/db/numbers';
+import { countRawProducts, createRawProduct, listRawProducts } from '../../../lib/db/queries/rawProducts';
 
 export async function GET(req) {
   const url = new URL(req.url);
@@ -11,12 +12,9 @@ export async function GET(req) {
     return errors.badRequest(paginationErrors);
   }
 
-  return await withClient(async (client) => {
-    const res = await client.query('SELECT * FROM raw_products ORDER BY created_at DESC LIMIT $1 OFFSET $2', [limit, offset]);
-    const totalRes = await client.query('SELECT COUNT(*) FROM raw_products');
-    const total = Number(totalRes.rows[0].count || 0);
-    return errors.json(pagination.buildPaginationResponse(res.rows, total, limit, offset), 200);
-  });
+  const rows = await listRawProducts({ limit, offset });
+  const total = await countRawProducts();
+  return errors.json(pagination.buildPaginationResponse(rows, total, limit, offset), 200);
 }
 
 export async function POST(req) {
@@ -24,22 +22,14 @@ export async function POST(req) {
   const valid = validators.CreateRawProduct(body);
   if (!valid) return errors.badRequest(validators.formatErrors(validators.CreateRawProduct.errors));
 
-  return await withClient(async (client) => {
-    try {
-      const cols = ['name','unit','price','supplier'];
-      const vals = [
-        body.name,
-        body.unit,
-        Number(body.price),
-        body.supplier || null,
-      ];
-      const placeholders = cols.map((_,i)=>`$${i+1}`).join(',');
-      const q = `INSERT INTO raw_products (${cols.join(',')}) VALUES (${placeholders}) RETURNING *`;
-      const r = await client.query(q, vals);
-      return errors.json(r.rows[0], 201);
-    } catch (err) {
-      if (err.code === '23505') return errors.conflict();
-      throw err;
-    }
-  });
+  try {
+    const rawProduct = await createRawProduct({
+      ...body,
+      price: toFiniteNumber(body.price),
+    });
+    return errors.json(rawProduct, 201);
+  } catch (err) {
+    if (err.code === '23505') return errors.conflict();
+    throw err;
+  }
 }

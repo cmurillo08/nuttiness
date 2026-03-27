@@ -1,6 +1,7 @@
-import { withClient } from '../../../../lib/db';
 import validators from '../../../../lib/validators';
 import errors from '../../../../lib/errors';
+import { toFiniteNumber } from '../../../../lib/db/numbers';
+import { deleteRawProductById, getRawProductById, updateRawProductById } from '../../../../lib/db/queries/rawProducts';
 
 function isUuid(id) {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
@@ -9,11 +10,10 @@ function isUuid(id) {
 export async function GET(req, { params }) {
   const { id } = await params;
   if (!isUuid(id)) return errors.badRequest([{ message: 'Invalid id format' }]);
-  return await withClient(async (client) => {
-    const r = await client.query('SELECT * FROM raw_products WHERE id = $1', [id]);
-    if (r.rowCount === 0) return errors.notFound();
-    return errors.json(r.rows[0], 200);
-  });
+
+  const rawProduct = await getRawProductById(id);
+  if (!rawProduct) return errors.notFound();
+  return errors.json(rawProduct, 200);
 }
 
 export async function PUT(req, { params }) {
@@ -23,18 +23,17 @@ export async function PUT(req, { params }) {
   const valid = validators.UpdateRawProduct(body);
   if (!valid) return errors.badRequest(validators.formatErrors(validators.UpdateRawProduct.errors));
 
-  return await withClient(async (client) => {
-    try {
-      const q = `UPDATE raw_products SET name=$2, unit=$3, price=$4, supplier=$5, updated_at=now() WHERE id=$1 RETURNING *`;
-      const vals = [id, body.name, body.unit, Number(body.price), body.supplier || null];
-      const r = await client.query(q, vals);
-      if (r.rowCount === 0) return errors.notFound();
-      return errors.json(r.rows[0], 200);
-    } catch (err) {
-      if (err.code === '23505') return errors.conflict();
-      throw err;
-    }
-  });
+  try {
+    const rawProduct = await updateRawProductById(id, {
+      ...body,
+      price: toFiniteNumber(body.price),
+    });
+    if (!rawProduct) return errors.notFound();
+    return errors.json(rawProduct, 200);
+  } catch (err) {
+    if (err.code === '23505') return errors.conflict();
+    throw err;
+  }
 }
 
 export async function PATCH(req, { params }) {
@@ -42,32 +41,29 @@ export async function PATCH(req, { params }) {
   if (!isUuid(id)) return errors.badRequest([{ message: 'Invalid id format' }]);
   const body = await req.json();
 
-  return await withClient(async (client) => {
-    const r0 = await client.query('SELECT * FROM raw_products WHERE id=$1', [id]);
-    if (r0.rowCount === 0) return errors.notFound();
-    const existing = r0.rows[0];
-    const merged = { ...existing, ...body };
-    const valid = validators.UpdateRawProduct(merged);
-    if (!valid) return errors.badRequest(validators.formatErrors(validators.UpdateRawProduct.errors));
+  const existing = await getRawProductById(id);
+  if (!existing) return errors.notFound();
+  const merged = { ...existing, ...body };
+  const valid = validators.UpdateRawProduct(merged);
+  if (!valid) return errors.badRequest(validators.formatErrors(validators.UpdateRawProduct.errors));
 
-    try {
-      const q = `UPDATE raw_products SET name=$2, unit=$3, price=$4, supplier=$5, updated_at=now() WHERE id=$1 RETURNING *`;
-      const vals = [id, merged.name, merged.unit, Number(merged.price), merged.supplier || null];
-      const r = await client.query(q, vals);
-      return errors.json(r.rows[0], 200);
-    } catch (err) {
-      if (err.code === '23505') return errors.conflict();
-      throw err;
-    }
-  });
+  try {
+    const rawProduct = await updateRawProductById(id, {
+      ...merged,
+      price: toFiniteNumber(merged.price),
+    });
+    return errors.json(rawProduct, 200);
+  } catch (err) {
+    if (err.code === '23505') return errors.conflict();
+    throw err;
+  }
 }
 
 export async function DELETE(req, { params }) {
   const { id } = await params;
   if (!isUuid(id)) return errors.badRequest([{ message: 'Invalid id format' }]);
-  return await withClient(async (client) => {
-    const r = await client.query('DELETE FROM raw_products WHERE id=$1 RETURNING *', [id]);
-    if (r.rowCount === 0) return errors.notFound();
-    return errors.json({}, 204);
-  });
+
+  const rawProduct = await deleteRawProductById(id);
+  if (!rawProduct) return errors.notFound();
+  return errors.json({}, 204);
 }

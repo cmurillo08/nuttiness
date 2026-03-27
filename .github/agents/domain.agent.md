@@ -6,7 +6,7 @@ tools:
   - edit
   - search
   - todo
-model: Claude Haiku 4.5 (copilot)
+model: GPT-5.4 (copilot)
 ---
 
 ## 🧠 Role

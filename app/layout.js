@@ -1,5 +1,7 @@
 import './globals.css'
 
+import AppShell from '../components/AppShell'
+
 export const metadata = {
   title: 'Nuttiness'
 }
@@ -7,7 +9,9 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <AppShell>{children}</AppShell>
+      </body>
     </html>
   )
 }

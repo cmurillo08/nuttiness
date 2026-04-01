@@ -75,12 +75,7 @@ export default function Page() {
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <Link href="/dashboard" title="Back to Dashboard" className="hover:opacity-80 transition-opacity">
-            <img src="/nuttiness-logo.png" alt="Dashboard" className="h-12 w-12 object-contain" />
-          </Link>
-          <h1 className="text-2xl font-semibold text-primary">Sales</h1>
-        </div>
+        <h1 className="text-2xl font-semibold text-primary">Sales</h1>
         <Link href="/sales/new" className="px-3 py-2 bg-primary text-white rounded-md">New</Link>
       </div>
 

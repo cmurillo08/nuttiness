@@ -1,6 +1,5 @@
 "use client"
 import { useEffect, useState } from "react"
-import Link from "next/link"
 import Amount from "../../components/Amount"
 
 export default function ReportsPage() {
@@ -41,12 +40,7 @@ export default function ReportsPage() {
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <Link href="/dashboard" title="Back to Dashboard" className="hover:opacity-80 transition-opacity">
-            <img src="/nuttiness-logo.png" alt="Dashboard" className="h-12 w-12 object-contain" />
-          </Link>
-          <h1 className="text-2xl font-semibold text-primary">Reports</h1>
-        </div>
+        <h1 className="text-2xl font-semibold text-primary">Reports</h1>
       </div>
 
       {loading && (

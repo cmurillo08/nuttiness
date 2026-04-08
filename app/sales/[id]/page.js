@@ -1,5 +1,5 @@
 "use client"
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import Amount from "../../../components/Amount"
 import StatusBadge from "../../../components/StatusBadge"
@@ -16,12 +16,7 @@ export default function Page() {
   const [editQty, setEditQty] = useState('')
   const [editPrice, setEditPrice] = useState('')
 
-  useEffect(() => {
-    if (!id) return
-    fetchSale()
-  }, [id])
-
-  async function fetchSale() {
+  const fetchSale = useCallback(async () => {
     setLoading(true)
     setError(null)
     try {
@@ -34,7 +29,12 @@ export default function Page() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [id])
+
+  useEffect(() => {
+    if (!id) return
+    fetchSale()
+  }, [id, fetchSale])
 
   async function doTransition(to_status) {
     setBusy(true)
@@ -130,20 +130,20 @@ export default function Page() {
     }
   }
 
-  if (loading) return <div className="p-6">Loading…</div>
-  if (!sale) return <div className="p-6">Sale not found.</div>
+  if (loading) return <div className="px-4 py-4 sm:px-6 sm:py-6 lg:px-8">Loading…</div>
+  if (!sale) return <div className="px-4 py-4 sm:px-6 sm:py-6 lg:px-8">Sale not found.</div>
 
   const lines = Array.isArray(sale.lines) ? sale.lines : []
   const canEdit = sale.status === 'ordered' || sale.status === 'prepared'
 
   return (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-4">
+    <div className="space-y-6 px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex min-w-0 items-start gap-3 sm:gap-4">
           <button onClick={() => router.push('/sales')} className="text-gray-600 hover:text-gray-900 text-xl font-bold">←</button>
-          <div>
-            <h1 className="text-3xl font-semibold text-primary mb-2">Sale</h1>
-            <div className="flex gap-6 text-sm">
+          <div className="min-w-0">
+            <h1 className="mb-2 text-2xl font-semibold text-primary sm:text-3xl">Sale</h1>
+            <div className="flex flex-col gap-1 text-sm sm:flex-row sm:flex-wrap sm:gap-6">
               <div>
                 <span className="text-gray-600">Created: </span>
                 <span className="font-medium">{sale.created_at ? new Date(sale.created_at).toLocaleString() : '-'}</span>
@@ -155,13 +155,13 @@ export default function Page() {
             </div>
           </div>
         </div>
-        <div className="text-right">
+        <div className="sm:text-right">
           <div className="text-sm text-gray-600 mb-1">Status</div>
           <StatusBadge status={sale.status} />
         </div>
       </div>
 
-      <div className="mb-6 p-4 bg-primary/5 rounded-lg border-2 border-primary/20">
+      <div className="rounded-lg border-2 border-primary/20 bg-primary/5 p-4">
         <div className="text-sm text-gray-600">Total Amount</div>
         <div className="text-2xl font-bold text-primary"><Amount value={sale.total_amount} /></div>
       </div>
@@ -170,9 +170,47 @@ export default function Page() {
         <h2 className="text-lg font-semibold text-primary mb-3">Order Items</h2>
         {lines.length === 0 && <div className="text-sm text-gray-500">No items.</div>}
         {lines.length > 0 && (
-          <div className="overflow-x-auto">
-            <table className="min-w-full table-auto border border-gray-200">
-              <thead className="bg-primary/10 border-b">
+          <>
+            <div className="space-y-3 lg:hidden">
+              {lines.map((ln) => (
+                <div key={ln.id} className="rounded-lg border border-gray-200 bg-white p-3">
+                  <div className="text-sm font-medium">{ln.product_name}{ln.unit ? ` - ${ln.unit}` : ""} {!ln.product_name && !ln.unit ? '(custom)' : ""}</div>
+                  {editingLineId === ln.id ? (
+                    <div className="mt-3 space-y-2 text-sm">
+                      <div>
+                        <label className="mb-1 block text-xs font-medium text-gray-600">Qty</label>
+                        <input type="number" value={editQty} onChange={(e) => setEditQty(e.target.value)} className="min-h-10 w-full rounded border px-2 py-2" min="1" />
+                      </div>
+                      <div>
+                        <label className="mb-1 block text-xs font-medium text-gray-600">Unit Price</label>
+                        <input type="number" value={editPrice} onChange={(e) => setEditPrice(e.target.value)} className="min-h-10 w-full rounded border px-2 py-2" step="0.01" min="0" />
+                      </div>
+                      <div className="font-medium">Line Total: <Amount value={Number(editQty || 0) * Number(editPrice || 0)} /></div>
+                      <div className="flex gap-2">
+                        <button onClick={saveLineEdit} disabled={busy} className="min-h-10 rounded bg-green-600 px-3 text-xs text-white disabled:opacity-60">Save</button>
+                        <button onClick={() => setEditingLineId(null)} disabled={busy} className="min-h-10 rounded bg-gray-400 px-3 text-xs text-white">Cancel</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="mt-2 space-y-1 text-sm">
+                      <div>Qty: <span className="font-medium">{ln.quantity}</span></div>
+                      <div>Unit Price: <span className="font-medium"><Amount value={ln.unit_price} /></span></div>
+                      <div>Line Total: <span className="font-medium"><Amount value={ln.line_total} /></span></div>
+                      {canEdit && (
+                        <div className="flex gap-2 pt-1">
+                          <button onClick={() => startEdit(ln)} disabled={busy} className="min-h-10 rounded border border-primary/30 px-3 text-xs font-medium text-primary disabled:opacity-60">Edit</button>
+                          <button onClick={() => deleteLine(ln.id)} disabled={busy} className="min-h-10 rounded border border-red-200 px-3 text-xs font-medium text-red-600 disabled:opacity-60">Delete</button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            <div className="hidden overflow-x-auto lg:block">
+              <table className="min-w-full table-auto border border-gray-200">
+                <thead className="border-b bg-primary/10">
                 <tr>
                   <th className="px-4 py-2 text-left text-sm font-semibold text-primary">Product</th>
                   <th className="px-4 py-2 text-left text-sm font-semibold text-primary">Qty</th>
@@ -223,25 +261,26 @@ export default function Page() {
                   </tr>
                 ))}
               </tbody>
-            </table>
-          </div>
+              </table>
+            </div>
+          </>
         )}
       </div>
 
       {error && <div className="text-red-600 bg-red-50 p-3 rounded mt-4">{error}</div>}
 
-      <div className="flex gap-2 mt-6">
+      <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
         {sale.status === 'ordered' && (
-          <button onClick={() => doTransition('prepared')} disabled={busy || lines.length === 0} className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 disabled:opacity-60 transition-colors">Mark Prepared</button>
+          <button onClick={() => doTransition('prepared')} disabled={busy || lines.length === 0} className="min-h-11 rounded-md bg-primary px-4 py-2 text-white transition-colors hover:bg-primary/90 disabled:opacity-60">Mark Prepared</button>
         )}
         {sale.status === 'prepared' && (
-          <button onClick={() => doTransition('delivered')} disabled={busy || lines.length === 0} className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-60 transition-colors">Mark Delivered</button>
+          <button onClick={() => doTransition('delivered')} disabled={busy || lines.length === 0} className="min-h-11 rounded-md bg-green-600 px-4 py-2 text-white transition-colors hover:bg-green-700 disabled:opacity-60">Mark Delivered</button>
         )}
         {sale.status === 'delivered' && (
-          <button onClick={() => doTransition('paid')} disabled={busy} className="px-4 py-2 bg-amber-600 text-white rounded-md hover:bg-amber-700 disabled:opacity-60 transition-colors">Mark Paid</button>
+          <button onClick={() => doTransition('paid')} disabled={busy} className="min-h-11 rounded-md bg-amber-600 px-4 py-2 text-white transition-colors hover:bg-amber-700 disabled:opacity-60">Mark Paid</button>
         )}
         {(sale.status === 'prepared' || sale.status === 'delivered') && (
-          <button onClick={doCancel} disabled={busy} className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-60 transition-colors">Cancel Sale</button>
+          <button onClick={doCancel} disabled={busy} className="min-h-11 rounded-md bg-red-600 px-4 py-2 text-white transition-colors hover:bg-red-700 disabled:opacity-60">Cancel Sale</button>
         )}
       </div>
     </div>

@@ -3,8 +3,6 @@ import { useEffect, useState } from "react"
 import { useRouter, useParams } from "next/navigation"
 import ExpenseForm from "../../../components/ExpenseForm"
 import ConfirmDialog from "../../../components/ConfirmDialog"
-import Amount from "../../../components/Amount"
-import Link from "next/link"
 
 export default function ExpenseDetailPage() {
   const { id } = useParams()
@@ -12,7 +10,6 @@ export default function ExpenseDetailPage() {
   const [item, setItem] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [editing, setEditing] = useState(false)
   const [confirmOpen, setConfirmOpen] = useState(false)
 
   useEffect(() => {
@@ -47,23 +44,23 @@ export default function ExpenseDetailPage() {
     }
   }
 
-  function handleUpdateSuccess(body) {
+  function handleUpdateSuccess() {
     // After updating an expense, return to the list
     router.push('/expenses')
   }
 
-  if (loading) return <div className="p-6">Loading…</div>
-  if (error) return <div className="p-6 text-red-600">{error}</div>
-  if (!item) return <div className="p-6 text-sm text-gray-500">Not found</div>
+  if (loading) return <div className="px-4 py-4 sm:px-6 sm:py-6 lg:px-8">Loading…</div>
+  if (error) return <div className="px-4 py-4 text-red-600 sm:px-6 sm:py-6 lg:px-8">{error}</div>
+  if (!item) return <div className="px-4 py-4 text-sm text-gray-500 sm:px-6 sm:py-6 lg:px-8">Not found</div>
 
   return (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-4">
+    <div className="space-y-4 px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
+      <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold text-primary">Expense</h1>
       </div>
 
       <div className="max-w-2xl">
-        <div className="bg-white rounded shadow p-6">
+        <div className="rounded-lg bg-white p-4 shadow sm:p-6">
           <ExpenseForm endpoint={`/api/expenses/${id}`} method="PUT" initialData={item} onSuccess={handleUpdateSuccess} cancelHref={`/expenses`} />
         </div>
       </div>

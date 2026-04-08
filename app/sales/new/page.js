@@ -18,10 +18,10 @@ export default function Page() {
   }
 
   return (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-4">
+    <div className="space-y-4 px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-semibold text-primary">New Sale / Order</h1>
-        <button onClick={handleCancel} className="px-3 py-2 border border-primary text-primary bg-white hover:bg-primary/5 rounded-md">Cancel</button>
+        <button onClick={handleCancel} className="min-h-11 rounded-md border border-primary bg-white px-4 py-2 text-primary hover:bg-primary/5 sm:w-auto">Cancel</button>
       </div>
       <OrderBuilder onSuccess={handleSuccess} />
       {success && <div className="mt-4 text-green-600">Order created (id: {String(success.id || success.order_id || '')})</div>}

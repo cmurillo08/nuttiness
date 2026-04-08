@@ -131,33 +131,33 @@ export default function ExpenseForm({ endpoint = "/api/expenses", method = "POST
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
-        <input type="number" value={data.quantity} onChange={(e) => setField('quantity', e.target.value)} min="1" className="w-full px-3 py-2 border border-gray-300 rounded-md" />
+        <input type="number" value={data.quantity} onChange={(e) => setField('quantity', e.target.value)} min="1" className="min-h-11 w-full rounded-md border border-gray-300 px-3 py-2.5" />
         {errors.quantity && <div className="text-red-600 text-sm mt-1">{errors.quantity}</div>}
       </div>
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Cost (CRC)</label>
-        <input readOnly type="number" step="0.01" value={data.cost} className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50" />
+        <input readOnly type="number" step="0.01" value={data.cost} className="min-h-11 w-full rounded-md border border-gray-300 bg-gray-50 px-3 py-2.5" />
         {errors.cost && <div className="text-red-600 text-sm mt-1">{errors.cost}</div>}
       </div>
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Purchased at</label>
-        <input type="date" value={data.purchased_at} onChange={(e) => setField('purchased_at', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md" />
+        <input type="date" value={data.purchased_at} onChange={(e) => setField('purchased_at', e.target.value)} className="min-h-11 w-full rounded-md border border-gray-300 px-3 py-2.5" />
         {errors.purchased_at && <div className="text-red-600 text-sm mt-1">{errors.purchased_at}</div>}
       </div>
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
-        <textarea value={data.notes} onChange={(e) => setField('notes', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md" />
+        <textarea value={data.notes} onChange={(e) => setField('notes', e.target.value)} className="w-full rounded-md border border-gray-300 px-3 py-2.5" />
         {errors.notes && <div className="text-red-600 text-sm mt-1">{errors.notes}</div>}
       </div>
 
-      <div className="flex gap-2">
+      <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
         {cancelHref ? (
-          <button type="button" onClick={() => router.push(cancelHref)} className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50">Cancel</button>
+          <button type="button" onClick={() => router.push(cancelHref)} className="min-h-11 w-full rounded-md border border-gray-300 bg-white px-4 py-2 text-gray-700 hover:bg-gray-50 sm:w-auto">Cancel</button>
         ) : null}
-        <button type="submit" disabled={submitting} className="px-4 py-2 bg-primary text-white rounded-md">
+        <button type="submit" disabled={submitting} className="min-h-11 w-full rounded-md bg-primary px-4 py-2 text-white sm:w-auto">
           {submitting ? "Saving…" : "Save"}
         </button>
       </div>

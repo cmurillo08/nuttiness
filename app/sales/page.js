@@ -2,7 +2,6 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import EntityTable from "../../components/EntityTable"
-import Amount from "../../components/Amount"
 import StatusBadge from "../../components/StatusBadge"
 import Pagination from "../../components/Pagination"
 
@@ -73,15 +72,15 @@ export default function Page() {
   }, [offset, status, limit])
 
   return (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-4">
+    <div className="space-y-4 px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-semibold text-primary">Sales</h1>
-        <Link href="/sales/new" className="px-3 py-2 bg-primary text-white rounded-md">New</Link>
+        <Link href="/sales/new" className="inline-flex min-h-11 items-center justify-center rounded-md bg-primary px-4 py-2 text-white sm:w-auto">New</Link>
       </div>
 
-      <div className="mb-4 flex gap-2 items-center flex-wrap">
+      <div className="flex flex-col gap-2 sm:max-w-sm">
         <label className="text-sm">Status:</label>
-        <select value={status} onChange={(e) => { setOffset(0); setStatus(e.target.value) }} className="p-2 border rounded">
+        <select value={status} onChange={(e) => { setOffset(0); setStatus(e.target.value) }} className="min-h-11 rounded border p-2.5">
           <option value="">All</option>
           <option value="ordered">ordered</option>
           <option value="prepared">prepared</option>

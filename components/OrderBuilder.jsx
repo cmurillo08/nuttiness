@@ -5,8 +5,6 @@ import CustomerSelect from "./CustomerSelect"
 import Amount from "./Amount"
 
 export default function OrderBuilder({ onSuccess }) {
-  const [products, setProducts] = useState([])
-  const [loading, setLoading] = useState(true)
   const [lines, setLines] = useState([])
   const [error, setError] = useState(null)
   const [submitting, setSubmitting] = useState(false)
@@ -18,15 +16,6 @@ export default function OrderBuilder({ onSuccess }) {
   const [selectedProduct, setSelectedProduct] = useState(null)
   const [newLineQty, setNewLineQty] = useState('')
   const [newLineUnitPrice, setNewLineUnitPrice] = useState('')
-
-  useEffect(() => {
-    setLoading(true)
-    fetch("/api/products")
-      .then((r) => r.json())
-      .then((d) => setProducts(Array.isArray(d) ? d : []))
-      .catch((e) => setError(String(e)))
-      .finally(() => setLoading(false))
-  }, [])
 
   // Fetch selected product details
   useEffect(() => {
@@ -143,8 +132,8 @@ export default function OrderBuilder({ onSuccess }) {
   }
 
   return (
-    <div className="space-y-4">
-      <div>
+    <div className="space-y-6">
+      <div className="space-y-2">
         <label className="block text-sm font-medium mb-2">Customer <span className="text-red-600">*</span></label>
         <CustomerSelect
           value={customerId}
@@ -154,10 +143,10 @@ export default function OrderBuilder({ onSuccess }) {
       </div>
 
       <div>
-        <div className="flex items-center justify-between mb-2">
+        <div className="mb-2 flex items-center justify-between">
           <h3 className="font-semibold">Add Product</h3>
         </div>
-        <div className="space-y-3 p-3 border rounded-md bg-gray-50">
+        <div className="space-y-3 rounded-lg border border-gray-200 bg-gray-50 p-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Select Prepared Product</label>
             <PreparedProductSelect 
@@ -180,7 +169,7 @@ export default function OrderBuilder({ onSuccess }) {
               onChange={(e) => setNewLineQty(e.target.value)} 
               placeholder="0"
               min="1"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md" 
+              className="min-h-11 w-full rounded-md border border-gray-300 px-3 py-2.5" 
             />
           </div>
 
@@ -194,7 +183,7 @@ export default function OrderBuilder({ onSuccess }) {
             type="button"
             onClick={addLineFromForm}
             disabled={!selectedProductId || !newLineQty}
-            className="w-full px-3 py-2 bg-blue-600 text-white rounded-md disabled:opacity-60 hover:bg-blue-700"
+            className="min-h-11 w-full rounded-md bg-blue-600 px-3 py-2 text-white disabled:opacity-60 hover:bg-blue-700"
           >
             Add to Order
           </button>
@@ -202,11 +191,11 @@ export default function OrderBuilder({ onSuccess }) {
       </div>
 
       <div>
-        <div className="flex items-center justify-between mb-2">
+        <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <h3 className="font-semibold">Order Lines</h3>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-2">
             <label className="text-sm">Initial status</label>
-            <select value={status} onChange={(e) => setStatus(e.target.value)} className="px-2 py-1 border rounded">
+            <select value={status} onChange={(e) => setStatus(e.target.value)} className="min-h-11 rounded border px-3 py-2 sm:min-h-0 sm:px-2 sm:py-1">
               <option value="ordered">ordered</option>
               <option value="prepared">prepared</option>
               <option value="delivered">delivered</option>
@@ -217,31 +206,31 @@ export default function OrderBuilder({ onSuccess }) {
         </div>
         {lines.length === 0 && <div className="text-sm text-gray-500">No lines. Add products above.</div>}
         {lines.map((l) => (
-          <div key={l.id} className="flex items-start gap-3 p-3 border rounded mb-2 bg-gray-50">
-            <div className="flex-1">
+          <div key={l.id} className="mb-3 rounded-lg border border-gray-200 bg-gray-50 p-3">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div className="min-w-0 flex-1">
               <div className="font-medium">
-                {l.product_name || <input placeholder="Name" value={l.product_name} onChange={(e) => updateLine(l.id, { product_name: e.target.value })} className="px-2 py-1 border rounded w-48" />}
+                {l.product_name || <input placeholder="Name" value={l.product_name} onChange={(e) => updateLine(l.id, { product_name: e.target.value })} className="min-h-10 w-full rounded border px-2 py-2 sm:w-48 sm:py-1" />}
               </div>
-              <div className="flex gap-2 mt-2 items-center text-sm">
-                <label className="text-xs font-medium">Qty:</label>
-                <input type="number" value={l.qty} onChange={(e) => updateLine(l.id, { qty: e.target.value })} className="w-20 p-1 border rounded" step="0.01" min="0" />
-                <label className="text-xs font-medium">Unit Price:</label>
-                <input type="number" value={l.unit_price} onChange={(e) => updateLine(l.id, { unit_price: e.target.value })} className="w-24 p-1 border rounded" step="0.01" />
-                <div className="ml-auto font-medium">Line: <Amount value={Number(l.qty || 0) * Number(l.unit_price || 0)} /></div>
+              <div className="mt-2 grid grid-cols-1 gap-2 text-sm sm:grid-cols-[auto_96px_auto_112px_1fr] sm:items-center">
+                <label className="text-xs font-medium sm:text-right">Qty</label>
+                <input type="number" value={l.qty} onChange={(e) => updateLine(l.id, { qty: e.target.value })} className="min-h-10 w-full rounded border p-2 sm:min-h-0 sm:p-1" step="0.01" min="0" />
+                <label className="text-xs font-medium sm:text-right">Unit Price</label>
+                <input type="number" value={l.unit_price} onChange={(e) => updateLine(l.id, { unit_price: e.target.value })} className="min-h-10 w-full rounded border p-2 sm:min-h-0 sm:p-1" step="0.01" />
+                <div className="font-medium sm:ml-auto">Line: <Amount value={Number(l.qty || 0) * Number(l.unit_price || 0)} /></div>
               </div>
             </div>
-            <button onClick={() => removeLine(l.id)} className="text-red-600 hover:text-red-700 transition-colors flex-shrink-0 p-1" title="Delete">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-              </svg>
-            </button>
+              <button onClick={() => removeLine(l.id)} className="inline-flex min-h-10 items-center justify-center self-end rounded-md border border-red-200 px-3 text-sm font-medium text-red-600 hover:text-red-700 sm:self-start" title="Delete">
+                Delete
+              </button>
+            </div>
           </div>
         ))}
       </div>
 
-      <div className="flex items-center justify-between pt-4 border-t">
+      <div className="flex flex-col gap-3 border-t pt-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="text-lg font-semibold">Total: <Amount value={total} /></div>
-        <button onClick={submit} disabled={submitting || !customerId || lines.length === 0} className="px-4 py-2 bg-green-600 text-white rounded disabled:opacity-60 hover:bg-green-700">
+        <button onClick={submit} disabled={submitting || !customerId || lines.length === 0} className="min-h-11 w-full rounded bg-green-600 px-4 py-2 text-white disabled:opacity-60 hover:bg-green-700 sm:w-auto">
           {submitting ? 'Submitting…' : 'Submit Order'}
         </button>
       </div>

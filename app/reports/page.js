@@ -38,8 +38,8 @@ export default function ReportsPage() {
   }
 
   return (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-6">
+    <div className="space-y-6 px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
+      <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold text-primary">Reports</h1>
       </div>
 
@@ -56,30 +56,30 @@ export default function ReportsPage() {
       )}
 
       {!loading && report && (
-        <div className="max-w-2xl mx-auto">
+        <div className="mx-auto w-full max-w-4xl">
           <h2 className="text-xl font-semibold text-primary mb-6">Financial Summary</h2>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <div className="mb-8 grid grid-cols-1 gap-4 lg:grid-cols-3">
             {/* Total Expenses */}
-            <div className="bg-red-50 border-2 border-red-200 rounded-lg p-6">
+            <div className="rounded-lg border-2 border-red-200 bg-red-50 p-5 sm:p-6">
               <div className="text-sm font-medium text-red-900 mb-2">Total Expenses</div>
-              <div className="text-3xl font-bold text-red-900">
+              <div className="text-2xl font-bold text-red-900 sm:text-3xl">
                 <Amount value={report.total_expenses_amount || 0} />
               </div>
             </div>
 
             {/* Total Sales */}
-            <div className="bg-amber-50 border-2 border-amber-200 rounded-lg p-6">
+            <div className="rounded-lg border-2 border-amber-200 bg-amber-50 p-5 sm:p-6">
               <div className="text-sm font-medium text-amber-900 mb-2">Total Sales</div>
-              <div className="text-3xl font-bold text-amber-900">
+              <div className="text-2xl font-bold text-amber-900 sm:text-3xl">
                 <Amount value={report.total_sales_amount || 0} />
               </div>
             </div>
 
             {/* Historical Profit */}
-            <div className={`bg-green-50 border-2 border-green-200 rounded-lg p-6`}>
+            <div className={`rounded-lg border-2 border-green-200 bg-green-50 p-5 sm:p-6`}>
               <div className="text-sm font-medium text-green-900 mb-2">Historical Profit</div>
-              <div className={`text-3xl font-bold ${getProfitColor(report.historical_profit || 0)}`}>
+              <div className={`text-2xl font-bold sm:text-3xl ${getProfitColor(report.historical_profit || 0)}`}>
                 <Amount value={report.historical_profit || 0} />
               </div>
               {(report.historical_profit || 0) <= 0 && (

@@ -2,10 +2,10 @@ import CustomerForm from "../../../components/CustomerForm"
 
 export default function Page() {
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-semibold text-primary mb-4">New Customer</h1>
-      <div className="max-w-xl">
-        <div className="bg-white rounded shadow p-6">
+    <div className="space-y-4 px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
+      <h1 className="text-2xl font-semibold text-primary">New Customer</h1>
+      <div className="max-w-2xl">
+        <div className="rounded-lg bg-white p-4 shadow sm:p-6">
           <CustomerForm />
         </div>
       </div>

@@ -1,8 +1,9 @@
 "use client"
 
+import Image from "next/image"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 
 const SHELL_SECTIONS = [
   { href: "/sales", label: "Sales", icon: SalesIcon },
@@ -21,10 +22,11 @@ function shouldRenderShell(pathname) {
   return SHELL_SECTIONS.some((section) => matchesSection(pathname, section.href))
 }
 
-function SidebarNavItem({ href, label, icon: Icon, active, collapsed }) {
+function SidebarNavItem({ href, label, icon: Icon, active, collapsed, onNavigate }) {
   return (
     <Link
       href={href}
+      onClick={onNavigate}
       aria-current={active ? "page" : undefined}
       className={[
         "group flex items-center gap-3 rounded-2xl px-3 py-3 text-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/60",
@@ -47,21 +49,13 @@ function SidebarNavItem({ href, label, icon: Icon, active, collapsed }) {
 export default function AppShell({ children }) {
   const pathname = usePathname()
   const [collapsed, setCollapsed] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [prevPathname, setPrevPathname] = useState(pathname)
 
-  useEffect(() => {
-    const mediaQuery = window.matchMedia("(max-width: 1023px)")
-    const syncCollapsedState = () => setCollapsed(mediaQuery.matches)
-
-    syncCollapsedState()
-
-    if (mediaQuery.addEventListener) {
-      mediaQuery.addEventListener("change", syncCollapsedState)
-      return () => mediaQuery.removeEventListener("change", syncCollapsedState)
-    }
-
-    mediaQuery.addListener(syncCollapsedState)
-    return () => mediaQuery.removeListener(syncCollapsedState)
-  }, [])
+  if (prevPathname !== pathname) {
+    setPrevPathname(pathname)
+    setMobileMenuOpen(false)
+  }
 
   if (!shouldRenderShell(pathname)) {
     return children
@@ -70,10 +64,85 @@ export default function AppShell({ children }) {
   return (
     <div className="min-h-screen bg-stone-50 text-slate-900">
       <div className="flex min-h-screen">
+        <div className="fixed inset-x-0 top-0 z-40 flex h-16 items-center justify-between border-b border-stone-200 bg-[#f6efe1] px-4 lg:hidden">
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen(true)}
+            className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/70 bg-white text-primary shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/60"
+            aria-label="Open navigation"
+          >
+            <MenuIcon className="h-5 w-5" />
+          </button>
+          <Link href="/sales" className="inline-flex items-center gap-2 rounded-xl bg-white/80 px-3 py-1.5">
+            <Image src="/nuttiness-logo.png" alt="Nuttiness" width={28} height={28} className="h-7 w-7 object-contain" />
+            <span className="text-sm font-semibold text-primary">Nuttiness</span>
+          </Link>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setMobileMenuOpen(false)}
+          aria-label="Close navigation"
+          className={[
+            "fixed inset-0 z-40 bg-slate-900/40 transition-opacity lg:hidden",
+            mobileMenuOpen ? "opacity-100" : "pointer-events-none opacity-0",
+          ].join(" ")}
+        />
+
         <aside
           className={[
-            "border-r border-stone-200 bg-[#f6efe1] transition-all duration-200",
-            collapsed ? "w-20" : "w-72",
+            "fixed inset-y-0 left-0 z-50 w-72 border-r border-stone-200 bg-[#f6efe1] transition-transform duration-200 lg:hidden",
+            mobileMenuOpen ? "translate-x-0" : "-translate-x-full",
+          ].join(" ")}
+        >
+          <div className="sticky top-0 flex h-screen flex-col px-3 py-4">
+            <Link
+              href="/sales"
+              className="mb-6 flex items-center gap-3 rounded-3xl border border-white/70 bg-white/70 px-3 py-3 shadow-sm transition-opacity hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/60"
+              aria-label="Nuttiness home"
+            >
+              <Image src="/nuttiness-logo.png" alt="Nuttiness" width={40} height={40} className="h-10 w-10 shrink-0 object-contain" />
+              <div className="min-w-0">
+                <div className="truncate text-base font-semibold text-primary">Nuttiness</div>
+                <div className="truncate text-xs text-primary/70">Sabor que Enloquece</div>
+              </div>
+            </Link>
+
+            <nav className="flex-1 space-y-2" aria-label="Primary">
+              {SHELL_SECTIONS.map((section) => (
+                <SidebarNavItem
+                  key={section.href}
+                  href={section.href}
+                  label={section.label}
+                  icon={section.icon}
+                  active={matchesSection(pathname, section.href)}
+                  collapsed={false}
+                  onNavigate={() => setMobileMenuOpen(false)}
+                />
+              ))}
+            </nav>
+
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen(false)}
+              className={[
+                "mt-4 flex items-center rounded-2xl border border-stone-200 bg-white px-3 py-3 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:border-secondary/40 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/60",
+                "justify-center",
+              ].join(" ")}
+              aria-label="Close sidebar"
+            >
+              <span className="text-primary">
+                <CloseIcon className="h-5 w-5" />
+              </span>
+              <span>Close</span>
+            </button>
+          </div>
+        </aside>
+
+        <aside
+          className={[
+            "hidden border-r border-stone-200 bg-[#f6efe1] transition-all duration-200 lg:block",
+            collapsed ? "lg:w-20" : "lg:w-72",
           ].join(" ")}
         >
           <div className="sticky top-0 flex h-screen flex-col px-3 py-4">
@@ -86,7 +155,7 @@ export default function AppShell({ children }) {
               aria-label="Nuttiness home"
               title={collapsed ? "Nuttiness" : undefined}
             >
-              <img src="/nuttiness-logo.png" alt="Nuttiness" className="h-10 w-10 shrink-0 object-contain" />
+              <Image src="/nuttiness-logo.png" alt="Nuttiness" width={40} height={40} className="h-10 w-10 shrink-0 object-contain" />
               {!collapsed && (
                 <div className="min-w-0">
                   <div className="truncate text-base font-semibold text-primary">Nuttiness</div>
@@ -126,7 +195,7 @@ export default function AppShell({ children }) {
           </div>
         </aside>
 
-        <main className="min-w-0 flex-1">
+        <main className="min-w-0 flex-1 pt-16 lg:pt-0">
           <div className="min-h-screen">{children}</div>
         </main>
       </div>
@@ -226,6 +295,43 @@ function CollapseIcon({ className, collapsed }) {
     >
       <path d="M4 12h16" />
       {collapsed ? <path d="m11 7 5 5-5 5" /> : <path d="m13 7-5 5 5 5" />}
+    </svg>
+  )
+}
+
+function MenuIcon({ className }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M4 7h16" />
+      <path d="M4 12h16" />
+      <path d="M4 17h16" />
+    </svg>
+  )
+}
+
+function CloseIcon({ className }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M6 6l12 12" />
+      <path d="m18 6-12 12" />
     </svg>
   )
 }

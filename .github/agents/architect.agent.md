@@ -7,8 +7,7 @@ tools:
   - search
   - todo
   - agent
-model: GPT-5.4 (copilot)
-agents: ["Domain Agent", "Backend Agent", "Frontend Agent"]
+model: gpt-5.4
 ---
 
 ## 🧠 Role

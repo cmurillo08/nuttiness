@@ -10,24 +10,26 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
-    ,"test:backend": "node tests/test_migrations_and_sales.js",
+    "lint": "eslint .",
+    "test:backend": "node tests/test_migrations_and_sales.js",
     "backup:db": "node scripts/backup-db.js",
     "restore:db": "node scripts/restore-db.js"
   },
   "dependencies": {
-    "next": "^15.5.14",
-    "react": "^19.2.4",
-    "react-dom": "^19.2.4",
-    "pg": "^8.11.0",
     "ajv": "^8.12.0",
-    "ajv-formats": "^2.1.1"
+    "ajv-formats": "^2.1.1",
+    "next": "^15.5.14",
+    "pg": "^8.11.0",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.2.2",
     "autoprefixer": "^10.4.27",
+    "dotenv": "^16.1.4",
+    "eslint": "9.39.4",
+    "eslint-config-next": "16.2.2",
     "postcss": "^8.5.8",
-    "tailwindcss": "^4.2.2",
-    "dotenv": "^16.1.4"
+    "tailwindcss": "^4.2.2"
   }
 }

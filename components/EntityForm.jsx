@@ -97,34 +97,36 @@ export default function EntityForm({ endpoint, method = "POST", initialData = {}
             <textarea
               value={data[f.name] ?? ""}
               onChange={(e) => setField(f.name, e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/30"
+              className="w-full rounded-md border border-gray-300 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/30"
+              placeholder={f.placeholder}
             />
           ) : (
             <input
               type={f.type === "number" ? "number" : "text"}
               value={data[f.name] ?? ""}
               onChange={(e) => setField(f.name, e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/30"
+              className="min-h-11 w-full rounded-md border border-gray-300 px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/30"
               min={f.min}
               max={f.max}
               step={f.step}
+              placeholder={f.placeholder}
             />
           )}
           {errors[f.name] && <div className="text-red-600 text-sm mt-1">{errors[f.name]}</div>}
           {f.hint && <div className="text-xs text-gray-500 mt-1">{f.hint}</div>}
         </div>
       ))}
-      <div className="flex gap-2">
+      <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
         {resolvedCancelHref ? (
           <button
             type="button"
             onClick={() => router.push(resolvedCancelHref)}
-            className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50"
+            className="min-h-11 w-full rounded-md border border-gray-300 bg-white px-4 py-2 text-gray-700 hover:bg-gray-50 sm:w-auto"
           >
             Cancel
           </button>
         ) : null}
-        <button type="submit" disabled={submitting} className="px-4 py-2 bg-primary text-white rounded-md hover:opacity-95">
+        <button type="submit" disabled={submitting} className="min-h-11 w-full rounded-md bg-primary px-4 py-2 text-white hover:opacity-95 sm:w-auto">
           {submitting ? "Saving…" : "Save"}
         </button>
       </div>

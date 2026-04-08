@@ -20,25 +20,24 @@ export default function CustomerSelect({ value, onChange, placeholder = "Select 
     return []
   }
 
-  const fetchItems = async (mounted = true) => {
-    setLoading(true)
-    setError(null)
-    try {
-      const res = await fetch("/api/customers?limit=100&offset=0")
-      if (!res.ok) throw new Error(`Failed to load customers: ${res.status}`)
-      const data = await res.json()
-      const customersList = extractCustomers(data)
-      if (mounted) setItems(customersList)
-    } catch (err) {
-      setError(String(err))
-    } finally {
-      setLoading(false)
-    }
-  }
-
   useEffect(() => {
     let mounted = true
-    fetchItems(mounted)
+    async function fetchItems() {
+      setLoading(true)
+      setError(null)
+      try {
+        const res = await fetch("/api/customers?limit=100&offset=0")
+        if (!res.ok) throw new Error(`Failed to load customers: ${res.status}`)
+        const data = await res.json()
+        const customersList = extractCustomers(data)
+        if (mounted) setItems(customersList)
+      } catch (err) {
+        setError(String(err))
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchItems()
     return () => { mounted = false }
   }, [])
 
@@ -93,7 +92,7 @@ export default function CustomerSelect({ value, onChange, placeholder = "Select 
   }
 
   return (
-    <div className="max-w-sm space-y-2">
+    <div className="w-full space-y-2">
       {error && <div className="text-red-600 text-sm">{error}</div>}
       
       <div ref={dropdownRef} className="relative">
@@ -113,7 +112,7 @@ export default function CustomerSelect({ value, onChange, placeholder = "Select 
         </button>
 
         {selectOpen && (
-          <div className="absolute top-full left-0 mt-1 bg-white border border-gray-300 rounded-md shadow-lg z-50 w-full max-w-sm">
+          <div className="absolute left-0 top-full z-50 mt-1 w-full rounded-md border border-gray-300 bg-white shadow-lg">
             <div className="p-2 border-b border-gray-200">
               <input
                 ref={inputRef}
@@ -152,19 +151,19 @@ export default function CustomerSelect({ value, onChange, placeholder = "Select 
         )}
       </div>
 
-      <div className="flex gap-2">
+      <div className="flex flex-col gap-2 sm:flex-row">
         <input
           type="text"
           value={newCustomerName}
           onChange={(e) => setNewCustomerName(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleCreateCustomer()}
           placeholder="Or create new customer..."
-          className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+          className="min-h-11 flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
         />
         <button
           onClick={handleCreateCustomer}
           disabled={creatingCustomer || !newCustomerName.trim()}
-          className="px-3 py-2 bg-blue-600 text-white text-sm rounded-md disabled:opacity-60 hover:bg-blue-700"
+          className="min-h-11 rounded-md bg-blue-600 px-3 py-2 text-sm text-white disabled:opacity-60 hover:bg-blue-700 sm:w-auto"
         >
           {creatingCustomer ? "Creating..." : "Add"}
         </button>

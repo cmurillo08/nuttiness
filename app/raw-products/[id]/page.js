@@ -37,14 +37,14 @@ export default function Page() {
     return () => { mounted = false }
   }, [id])
 
-  if (loading) return <div>Loading…</div>
-  if (error) return <div className="text-red-600">{error}</div>
-  if (!initialData) return <div className="text-sm text-gray-500">No data</div>
+  if (loading) return <div className="px-4 py-4 sm:px-6 sm:py-6 lg:px-8">Loading…</div>
+  if (error) return <div className="px-4 py-4 text-red-600 sm:px-6 sm:py-6 lg:px-8">{error}</div>
+  if (!initialData) return <div className="px-4 py-4 text-sm text-gray-500 sm:px-6 sm:py-6 lg:px-8">No data</div>
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-semibold mb-4 text-primary">Edit Raw Product</h1>
-      <div className="max-w-xl">
+    <div className="space-y-4 px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
+      <h1 className="text-2xl font-semibold text-primary">Edit Raw Product</h1>
+      <div className="max-w-2xl rounded-lg bg-white p-4 shadow sm:p-6">
         <RawProductForm initialData={initialData} endpoint={`/api/raw-products/${id}`} method="PUT" />
       </div>
     </div>

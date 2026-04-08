@@ -6,7 +6,7 @@ tools:
   - edit
   - search
   - todo
-model: gpt-5.3-codex
+model: GPT-5.3-Codex (copilot)
 ---
 
 ## 🎨 Role

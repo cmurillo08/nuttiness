@@ -6,7 +6,7 @@ tools:
   - edit
   - search
   - todo
-model: gpt-5.4
+model: GPT-5.4 (copilot)
 ---
 
 ## 🧠 Role

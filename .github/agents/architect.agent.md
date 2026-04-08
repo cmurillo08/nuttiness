@@ -7,7 +7,7 @@ tools:
   - search
   - todo
   - agent
-model: gpt-5.4
+model: Claude Sonnet 4.6 (copilot)
 ---
 
 ## 🧠 Role

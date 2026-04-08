@@ -2,7 +2,7 @@
 
 import Image from "next/image"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { useState } from "react"
 
 const SHELL_SECTIONS = [
@@ -48,13 +48,34 @@ function SidebarNavItem({ href, label, icon: Icon, active, collapsed, onNavigate
 
 export default function AppShell({ children }) {
   const pathname = usePathname()
+  const router = useRouter()
   const [collapsed, setCollapsed] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [loggingOut, setLoggingOut] = useState(false)
   const [prevPathname, setPrevPathname] = useState(pathname)
 
   if (prevPathname !== pathname) {
     setPrevPathname(pathname)
     setMobileMenuOpen(false)
+  }
+
+  async function handleLogout() {
+    if (loggingOut) return
+
+    setLoggingOut(true)
+
+    try {
+      await fetch("/api/auth/logout", { method: "POST" })
+    } finally {
+      setMobileMenuOpen(false)
+      router.push("/login")
+      router.refresh()
+      setLoggingOut(false)
+    }
+  }
+
+  if (pathname === "/login" || pathname.startsWith("/login/")) {
+    return children
   }
 
   if (!shouldRenderShell(pathname)) {
@@ -136,6 +157,18 @@ export default function AppShell({ children }) {
               </span>
               <span>Close</span>
             </button>
+
+            <button
+              type="button"
+              onClick={handleLogout}
+              disabled={loggingOut}
+              className="mt-2 flex items-center justify-center gap-2 rounded-2xl border border-stone-200 bg-white px-3 py-3 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:border-secondary/40 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/60 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <span className="text-primary">
+                <LogoutIcon className="h-5 w-5" />
+              </span>
+              <span>{loggingOut ? "Signing out..." : "Logout"}</span>
+            </button>
           </div>
         </aside>
 
@@ -191,6 +224,24 @@ export default function AppShell({ children }) {
                 <CollapseIcon className="h-5 w-5" collapsed={collapsed} />
               </span>
               {!collapsed && <span>{collapsed ? "Expand" : "Collapse"}</span>}
+            </button>
+
+            <button
+              type="button"
+              onClick={handleLogout}
+              disabled={loggingOut}
+              className={[
+                "mt-2 flex items-center rounded-2xl border border-stone-200 bg-white px-3 py-3 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:border-secondary/40 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/60 disabled:cursor-not-allowed disabled:opacity-60",
+                collapsed ? "justify-center" : "justify-start gap-3",
+              ].join(" ")}
+              aria-label="Logout"
+              title={collapsed ? "Logout" : undefined}
+            >
+              <span className="text-primary">
+                <LogoutIcon className="h-5 w-5" />
+              </span>
+              {!collapsed && <span>{loggingOut ? "Signing out..." : "Logout"}</span>}
+              {collapsed && <span className="sr-only">Logout</span>}
             </button>
           </div>
         </aside>
@@ -314,6 +365,25 @@ function MenuIcon({ className }) {
       <path d="M4 7h16" />
       <path d="M4 12h16" />
       <path d="M4 17h16" />
+    </svg>
+  )
+}
+
+function LogoutIcon({ className }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+      <path d="M16 17l5-5-5-5" />
+      <path d="M21 12H9" />
     </svg>
   )
 }

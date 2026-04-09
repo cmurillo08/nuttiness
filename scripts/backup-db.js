@@ -32,25 +32,30 @@ function timestamp() {
 
 function main() {
   const url = getConnectionStringFromEnv(process.env);
+  const schema = process.env.PGSCHEMA;
   const outArg = process.argv[2];
 
   const backupsDir = path.join(process.cwd(), 'backups');
   fs.mkdirSync(backupsDir, { recursive: true });
 
+  const prefix = schema || process.env.PGDATABASE || 'backup';
   const outputPath = outArg
     ? path.resolve(process.cwd(), outArg)
-    : path.join(backupsDir, `nuttiness_${timestamp()}.sql`);
+    : path.join(backupsDir, `${prefix}_${timestamp()}.sql`);
+
+  const pgDumpArgs = [
+    url,
+    '--format=plain',
+    '--no-owner',
+    '--no-privileges',
+    '--file',
+    outputPath,
+  ];
+  if (schema) pgDumpArgs.push(`--schema=${schema}`);
 
   const result = spawnSync(
     'pg_dump',
-    [
-      url,
-      '--format=plain',
-      '--no-owner',
-      '--no-privileges',
-      '--file',
-      outputPath,
-    ],
+    pgDumpArgs,
     {
       stdio: 'inherit',
       env: process.env,

@@ -12,6 +12,7 @@ function isPublicPath(pathname) {
   if (pathname.startsWith('/icons/')) return true;
   if (pathname === '/manifest.json') return true;
   if (pathname === '/favicon.ico') return true;
+  if (pathname === '/karu-logo.png') return true;
   return false;
 }
 

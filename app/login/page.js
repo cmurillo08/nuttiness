@@ -44,7 +44,7 @@ export default function LoginPage() {
     <main className="flex min-h-screen items-center justify-center bg-stone-100 px-4 py-8 sm:px-6">
       <div className="w-full max-w-md rounded-2xl border border-stone-200 bg-white p-6 shadow-sm sm:p-8">
         <div className="mb-6 space-y-1 text-center">
-          <h1 className="text-2xl font-semibold text-[#8B6F47]">Nuttiness</h1>
+          <h1 className="text-2xl font-semibold text-primary">Karú</h1>
           <p className="text-sm text-slate-600">Sign in to continue</p>
         </div>
 
@@ -61,7 +61,7 @@ export default function LoginPage() {
               value={username}
               onChange={(event) => setUsername(event.target.value)}
               required
-              className="min-h-11 w-full rounded-lg border border-stone-300 px-3 py-2 text-slate-900 shadow-sm outline-none transition focus:border-[#8B6F47] focus:ring-2 focus:ring-[#8B6F47]/20"
+              className="min-h-11 w-full rounded-lg border border-stone-300 px-3 py-2 text-slate-900 shadow-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
             />
           </div>
 
@@ -77,7 +77,7 @@ export default function LoginPage() {
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               required
-              className="min-h-11 w-full rounded-lg border border-stone-300 px-3 py-2 text-slate-900 shadow-sm outline-none transition focus:border-[#8B6F47] focus:ring-2 focus:ring-[#8B6F47]/20"
+              className="min-h-11 w-full rounded-lg border border-stone-300 px-3 py-2 text-slate-900 shadow-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
             />
           </div>
 
@@ -90,7 +90,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="min-h-11 w-full rounded-lg bg-[#8B6F47] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#7b613d] disabled:cursor-not-allowed disabled:opacity-70"
+            className="min-h-11 w-full rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-70"
           >
             {loading ? "Signing in..." : "Login"}
           </button>

@@ -7,8 +7,10 @@ const config = {
   theme: {
     extend: {
       colors: {
-        primary: '#8B6F47',
-        secondary: '#f59e0b',
+        primary: '#3B1F07',
+        secondary: '#5A7A38',
+        accent: '#C0714A',
+        'brand-bg': '#F0DFCA',
       },
     },
   },

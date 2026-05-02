@@ -1,11 +1,11 @@
 {
-  "name": "Nuttiness",
-  "short_name": "Nuttiness",
-  "description": "Sabor que Enloquece",
+  "name": "Káru",
+  "short_name": "Káru",
+  "description": "Mantequillas de Frutos Secos",
   "start_url": "/sales",
   "display": "standalone",
-  "background_color": "#f6efe1",
-  "theme_color": "#8B6F47",
+  "background_color": "#F0DFCA",
+  "theme_color": "#3B1F07",
   "icons": [
     {
       "src": "/icons/icon-192.png",

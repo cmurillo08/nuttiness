@@ -85,7 +85,7 @@ export default function AppShell({ children }) {
   return (
     <div className="min-h-screen bg-stone-50 text-slate-900">
       <div className="flex min-h-screen">
-        <div className="fixed inset-x-0 top-0 z-40 flex h-16 items-center justify-between border-b border-stone-200 bg-[#f6efe1] px-4 lg:hidden">
+        <div className="fixed inset-x-0 top-0 z-40 flex h-16 items-center justify-between border-b border-stone-200 bg-brand-bg px-4 lg:hidden">
           <button
             type="button"
             onClick={() => setMobileMenuOpen(true)}
@@ -95,8 +95,8 @@ export default function AppShell({ children }) {
             <MenuIcon className="h-5 w-5" />
           </button>
           <Link href="/sales" className="inline-flex items-center gap-2 rounded-xl bg-white/80 px-3 py-1.5">
-            <Image src="/nuttiness-logo.png" alt="Nuttiness" width={28} height={28} className="h-7 w-7 object-contain" />
-            <span className="text-sm font-semibold text-primary">Nuttiness</span>
+            <Image src="/karu-logo.png" alt="Karu" width={120} height={36} className="h-7 w-auto object-contain" />
+            <span className="text-sm text-primary/90">Disfrutá sin culpa</span>
           </Link>
         </div>
 
@@ -112,7 +112,7 @@ export default function AppShell({ children }) {
 
         <aside
           className={[
-            "fixed inset-y-0 left-0 z-50 w-72 border-r border-stone-200 bg-[#f6efe1] transition-transform duration-200 lg:hidden",
+            "fixed inset-y-0 left-0 z-50 w-72 border-r border-stone-200 bg-brand-bg transition-transform duration-200 lg:hidden",
             mobileMenuOpen ? "translate-x-0" : "-translate-x-full",
           ].join(" ")}
         >
@@ -120,12 +120,11 @@ export default function AppShell({ children }) {
             <Link
               href="/sales"
               className="mb-6 flex items-center gap-3 rounded-3xl border border-white/70 bg-white/70 px-3 py-3 shadow-sm transition-opacity hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/60"
-              aria-label="Nuttiness home"
+              aria-label="Karu home"
             >
-              <Image src="/nuttiness-logo.png" alt="Nuttiness" width={40} height={40} className="h-10 w-10 shrink-0 object-contain" />
+              <Image src="/karu-logo.png" alt="Karu" width={120} height={36} className="h-8 w-auto shrink-0 object-contain" />
               <div className="min-w-0">
-                <div className="truncate text-base font-semibold text-primary">Nuttiness</div>
-                <div className="truncate text-xs text-primary/70">Sabor que Enloquece</div>
+                <div className="truncate text-sm text-primary/90">Disfrutá sin culpa</div>
               </div>
             </Link>
 
@@ -174,7 +173,7 @@ export default function AppShell({ children }) {
 
         <aside
           className={[
-            "hidden border-r border-stone-200 bg-[#f6efe1] transition-all duration-200 lg:block",
+            "hidden border-r bg-brand-bg transition-all duration-200 lg:block",
             collapsed ? "lg:w-20" : "lg:w-72",
           ].join(" ")}
         >
@@ -185,14 +184,13 @@ export default function AppShell({ children }) {
                 "mb-6 flex items-center rounded-3xl border border-white/70 bg-white/70 px-3 py-3 shadow-sm transition-opacity hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/60",
                 collapsed ? "justify-center" : "gap-3",
               ].join(" ")}
-              aria-label="Nuttiness home"
-              title={collapsed ? "Nuttiness" : undefined}
+              aria-label="Karu home"
+              title={collapsed ? "Káru" : undefined}
             >
-              <Image src="/nuttiness-logo.png" alt="Nuttiness" width={40} height={40} className="h-10 w-10 shrink-0 object-contain" />
+              <Image src="/karu-logo.png" alt="Karu" width={160} height={48} className="h-10 w-auto shrink-0 object-contain" />
               {!collapsed && (
                 <div className="min-w-0">
-                  <div className="truncate text-base font-semibold text-primary">Nuttiness</div>
-                  <div className="truncate text-xs text-primary/70">Sabor que Enloquece</div>
+                  <div className="truncate text-sm text-primary/90">Disfrutá sin culpa</div>
                 </div>
               )}
             </Link>

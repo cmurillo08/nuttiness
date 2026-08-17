@@ -22,6 +22,8 @@ Essential repo conventions (must-follow)
 - Single source for domain rules: `Domain Agent` defines entities & business rules. Backend implements/persists but must not redefine domain logic.
 - Role separation: Architect = design + orchestration (no code); Domain = rules + entities (no API/UI); Backend/Frontend = implementation (only after approved spec).
 - Todo tool usage: Agents must use the workspace todo tool to record plans and phase progression.
+- Branch workflow: use `dev` as the default integration branch, create feature branches from `dev`, and treat `main` as release-only.
+- Main branch protection: do not commit directly to `main`; merge into `main` only through pull requests from `dev`.
 
 Developer workflows (how to run & check things)
 - **Development**: `npm run dev` starts the Next.js dev server on http://localhost:3000.

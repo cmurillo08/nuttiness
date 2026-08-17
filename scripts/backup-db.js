@@ -49,6 +49,8 @@ function main() {
     '--format=plain',
     '--no-owner',
     '--no-privileges',
+    '--if-exists',
+    '--clean',
     '--file',
     outputPath,
   ];

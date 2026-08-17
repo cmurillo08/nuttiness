@@ -2,6 +2,7 @@ import 'dotenv/config';
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
+import { resolvePgBinary } from './lib/pg-bin.js';
 
 function getConnectionStringFromEnv(env) {
   const host = env.PGHOST;
@@ -55,8 +56,11 @@ function main() {
   ];
   if (schema) pgDumpArgs.push(`--schema=${schema}`);
 
+  const pgDumpBin = resolvePgBinary('pg_dump', 'PG_DUMP_BIN');
+  console.log(`Using pg_dump: ${pgDumpBin}`);
+
   const result = spawnSync(
-    'pg_dump',
+    pgDumpBin,
     pgDumpArgs,
     {
       stdio: 'inherit',
@@ -66,7 +70,7 @@ function main() {
 
   if (result.error) {
     if (result.error.code === 'ENOENT') {
-      console.error('ERROR: `pg_dump` not found in PATH. Install PostgreSQL client tools.');
+      console.error(`ERROR: \`${pgDumpBin}\` not found. Install PostgreSQL client tools or set PG_DUMP_BIN.`);
     } else {
       console.error('ERROR running pg_dump:', result.error.message);
     }

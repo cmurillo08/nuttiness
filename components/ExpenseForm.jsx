@@ -3,19 +3,14 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import RawProductSelect from "./RawProductSelect"
 import Amount from "./Amount"
+import { toCalendarDateInput, toCalendarDateISO } from "../lib/date"
 
 export default function ExpenseForm({ endpoint = "/api/expenses", method = "POST", initialData = {}, onSuccess, cancelHref }) {
   const [data, setData] = useState(() => ({
     raw_product_id: initialData.raw_product_id ?? (initialData.raw_product?.id ?? ""),
     quantity: initialData.quantity ?? "",
     cost: initialData.cost ?? "",
-    purchased_at: initialData.purchased_at ? (function () {
-      try {
-        const d = new Date(initialData.purchased_at)
-        if (!isNaN(d)) return d.toISOString().slice(0, 10)
-      } catch (e) {}
-      return String(initialData.purchased_at).slice(0, 10)
-    })() : "",
+    purchased_at: toCalendarDateInput(initialData.purchased_at),
     notes: initialData.notes ?? "",
   }))
   const [errors, setErrors] = useState({})
@@ -33,7 +28,7 @@ export default function ExpenseForm({ endpoint = "/api/expenses", method = "POST
     const out = {}
     if (!data.purchased_at) out.purchased_at = "Required"
     const q = Number(data.quantity)
-    if (isNaN(q) || q <= 0) out.quantity = "Must be a number > 0"
+    if (!Number.isInteger(q) || q <= 0) out.quantity = "Must be a whole number greater than 0"
     const c = Number(data.cost)
     if (isNaN(c) || c < 0) out.cost = "Must be a number >= 0"
     return out
@@ -46,17 +41,11 @@ export default function ExpenseForm({ endpoint = "/api/expenses", method = "POST
     if (Object.keys(v).length) return setErrors(v)
     setSubmitting(true)
     try {
-      // normalize purchased_at: if user provided date-only (YYYY-MM-DD), convert to ISO datetime
-      let purchased_at_val = data.purchased_at
-      if (/^\d{4}-\d{2}-\d{2}$/.test(String(purchased_at_val))) {
-        purchased_at_val = String(purchased_at_val) + "T00:00:00Z"
-      }
-
       const payload = {
         raw_product_id: data.raw_product_id || null,
         quantity: Number(data.quantity),
         cost: Number(data.cost),
-        purchased_at: purchased_at_val,
+        purchased_at: toCalendarDateISO(data.purchased_at),
         notes: data.notes || null,
       }
       const res = await fetch(endpoint, {
@@ -131,7 +120,7 @@ export default function ExpenseForm({ endpoint = "/api/expenses", method = "POST
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
-        <input type="number" value={data.quantity} onChange={(e) => setField('quantity', e.target.value)} min="1" className="min-h-11 w-full rounded-md border border-gray-300 px-3 py-2.5" />
+        <input type="number" value={data.quantity} onChange={(e) => setField('quantity', e.target.value)} step="1" min="1" inputMode="numeric" className="min-h-11 w-full rounded-md border border-gray-300 px-3 py-2.5" />
         {errors.quantity && <div className="text-red-600 text-sm mt-1">{errors.quantity}</div>}
       </div>
 

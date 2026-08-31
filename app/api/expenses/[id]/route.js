@@ -1,12 +1,10 @@
 import validators from '../../../../lib/validators';
 import errors from '../../../../lib/errors';
+import { isUuid } from '../../../../lib/uuid';
+import { normalizePurchasedAt } from '../../../../lib/date';
 import { toFiniteNumber } from '../../../../lib/db/numbers';
 import { deleteExpenseById, getExpenseById } from '../../../../lib/db/queries/expenses';
 import { updateExpense } from '../../../../lib/services/expenses';
-
-function isUuid(id) {
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
-}
 
 export async function GET(req, { params }) {
   const { id } = await params;
@@ -20,7 +18,9 @@ export async function GET(req, { params }) {
 export async function PUT(req, { params }) {
   const { id } = await params;
   if (!isUuid(id)) return errors.badRequest([{ message: 'Invalid id format' }]);
-  const body = await req.json();
+  const rawBody = await req.json();
+  const { body, error: dateError } = normalizePurchasedAt(rawBody);
+  if (dateError) return errors.badRequest([{ message: dateError }]);
 
   // Prefer full update validator when available
   if (validators && typeof validators.UpdateExpense === 'function') {
@@ -31,8 +31,8 @@ export async function PUT(req, { params }) {
   // coerce numbers where needed
   const quantity = toFiniteNumber(body.quantity);
   const costVal = toFiniteNumber(body.cost ?? body.unit_cost);
-  if (!Number.isFinite(quantity) || quantity <= 0) {
-    return errors.badRequest([{ message: 'quantity must be a positive number' }]);
+  if (!Number.isInteger(quantity) || quantity < 1) {
+    return errors.badRequest([{ message: 'quantity must be a positive whole number' }]);
   }
   if (!Number.isFinite(costVal) || costVal < 0) {
     return errors.badRequest([{ message: 'cost (or unit_cost) must be a non-negative number' }]);

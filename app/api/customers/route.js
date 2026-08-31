@@ -1,17 +1,25 @@
 import validators from '../../../lib/validators';
 import errors from '../../../lib/errors';
 import pagination from '../../../lib/pagination';
+import sorting, { NAME_SORT_OPTIONS } from '../../../lib/sorting';
 import { countCustomers, createCustomer, listCustomers } from '../../../lib/db/queries/customers';
+
+const SORT_OPTIONS = NAME_SORT_OPTIONS;
 
 export async function GET(req) {
   const url = new URL(req.url);
   const { limit, offset, errors: paginationErrors } = pagination.parsePaginationParams(url);
-  
+
   if (paginationErrors) {
     return errors.badRequest(paginationErrors);
   }
 
-  const rows = await listCustomers({ limit, offset });
+  const { sort, order, errors: sortErrors } = sorting.parseSortParams(url, SORT_OPTIONS);
+  if (sortErrors) {
+    return errors.badRequest(sortErrors);
+  }
+
+  const rows = await listCustomers({ limit, offset, sort, order });
   const total = await countCustomers();
   return errors.json(pagination.buildPaginationResponse(rows, total, limit, offset), 200);
 }

@@ -1,11 +1,8 @@
 import validators from '../../../../lib/validators';
 import errors from '../../../../lib/errors';
+import { isUuid } from '../../../../lib/uuid';
 import { toFiniteNumber } from '../../../../lib/db/numbers';
 import { deleteRawProductById, getRawProductById, updateRawProductById } from '../../../../lib/db/queries/rawProducts';
-
-function isUuid(id) {
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
-}
 
 export async function GET(req, { params }) {
   const { id } = await params;

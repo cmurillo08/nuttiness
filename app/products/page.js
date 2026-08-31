@@ -3,6 +3,13 @@ import { useCallback, useEffect, useState } from "react"
 import Link from "next/link"
 import EntityTable from "../../components/EntityTable"
 import Pagination from "../../components/Pagination"
+import { createDeleteSuccessHandler, createSortChangeHandler } from "../../lib/list-page-client"
+
+const COLUMNS = [
+  { key: "name", label: "Name", sortKey: "name", defaultOrder: "asc" },
+  { key: "unit", label: "Unit Size" },
+  { key: "price", label: "Price", type: "amount" },
+]
 
 export default function Page() {
   const [items, setItems] = useState([])
@@ -12,12 +19,17 @@ export default function Page() {
   const [offset, setOffset] = useState(0)
   const [total, setTotal] = useState(0)
   const [search, setSearch] = useState("")
+  // No date column is shown in this list, so default to sorting by name
+  // rather than the backend's created_at default (avoids a "Default" ghost
+  // option in the mobile sort <select>; see EntityTable's mobileSortValue).
+  const [sort, setSort] = useState("name")
+  const [order, setOrder] = useState("asc")
 
   const fetchPage = useCallback(async () => {
     setLoading(true)
     setError(null)
     try {
-      const res = await fetch(`/api/products?limit=${limit}&offset=${offset}`)
+      const res = await fetch(`/api/products?limit=${limit}&offset=${offset}&sort=${sort}&order=${order}`)
       if (!res.ok) {
         const txt = await res.text()
         throw new Error(txt || `Error ${res.status}`)
@@ -38,11 +50,14 @@ export default function Page() {
     } finally {
       setLoading(false)
     }
-  }, [limit, offset])
+  }, [limit, offset, sort, order])
 
   useEffect(() => {
     fetchPage()
   }, [fetchPage])
+
+  const handleSortChange = createSortChangeHandler(COLUMNS, { sort, setSort, setOrder, setOffset })
+  const handleDeleteSuccess = createDeleteSuccessHandler({ offset, limit, total, setOffset, refetch: fetchPage })
 
   const filtered = items.filter((it) => it.name && it.name.toLowerCase().includes(search.toLowerCase()))
 
@@ -60,11 +75,16 @@ export default function Page() {
       {loading && <div>Loading…</div>}
       {error && <div className="text-red-600">{error}</div>}
 
-       <EntityTable items={filtered} columns={[
-          { key: "name", label: "Name" },
-          { key: "unit", label: "Unit" },
-          { key: "price", label: "Price", type: "amount" },
-        ]} editHrefBase="/products" entityName="Product" onDeleteSuccess={fetchPage} />
+       <EntityTable
+          items={filtered}
+          columns={COLUMNS}
+          editHrefBase="/products"
+          entityName="Product"
+          onDeleteSuccess={handleDeleteSuccess}
+          sort={sort}
+          order={order}
+          onSortChange={handleSortChange}
+        />
 
       <Pagination
         total={total}

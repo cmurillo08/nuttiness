@@ -18,6 +18,7 @@ export async function POST(req, { params }) {
     if (err && err.status === 403) return errors.badRequest({ error: 'forbidden', message: err.message });
     if (err && err.status === 400) return errors.badRequest({ error: 'invalid_transition', message: err.message });
     if (err && err.status === 422) return errors.badRequest({ error: 'validation_error', message: err.message });
+    if (err && err.status === 409) return errors.conflict(err.message);
     throw err;
   }
 }

@@ -2,6 +2,7 @@ import 'dotenv/config';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import readline from 'node:readline';
 import { spawnSync } from 'node:child_process';
 import { resolvePgBinary } from './lib/pg-bin.js';
 
@@ -12,10 +13,54 @@ import { resolvePgBinary } from './lib/pg-bin.js';
 // and psql aborts before touching any data. They're just session-timeout
 // knobs, safe to drop when the target server doesn't recognize them.
 const DROPPABLE_PREAMBLE_PARAMS = ['transaction_timeout'];
+const DROPPABLE_PREAMBLE_PATTERN = new RegExp(
+  `^SET (?:${DROPPABLE_PREAMBLE_PARAMS.join('|')}) = .*;$`
+);
 
-function stripUnsupportedPreambleSettings(sql) {
-  const pattern = new RegExp(`^SET (?:${DROPPABLE_PREAMBLE_PARAMS.join('|')}) = .*;$\\n?`, 'gm');
-  return sql.replace(pattern, '');
+// pg_dump always emits its preamble SETs before any real SQL, well within the
+// first few dozen lines. Capping the peek here means a dump with none of
+// these lines (the common case) is never read into memory in full.
+const PREAMBLE_SCAN_LINES = 200;
+
+function isDroppablePreambleLine(line) {
+  return DROPPABLE_PREAMBLE_PATTERN.test(line);
+}
+
+// Peeks at just the header window instead of buffering the whole file, so a
+// multi-gigabyte dump costs a few hundred lines of memory, not the whole file.
+async function fileHasDroppablePreamble(inputPath) {
+  const rl = readline.createInterface({
+    input: fs.createReadStream(inputPath, { encoding: 'utf8' }),
+    crlfDelay: Infinity,
+  });
+  try {
+    let lineNo = 0;
+    for await (const line of rl) {
+      if (isDroppablePreambleLine(line)) return true;
+      if (++lineNo >= PREAMBLE_SCAN_LINES) return false;
+    }
+    return false;
+  } finally {
+    rl.close();
+  }
+}
+
+// Streams inputPath to outputPath line-by-line, dropping unsupported preamble
+// SETs. Never holds more than one line in memory, so this is safe for
+// multi-gigabyte dumps.
+async function writeWithoutUnsupportedPreamble(inputPath, outputPath) {
+  const rl = readline.createInterface({
+    input: fs.createReadStream(inputPath, { encoding: 'utf8' }),
+    crlfDelay: Infinity,
+  });
+  const out = fs.createWriteStream(outputPath);
+  for await (const line of rl) {
+    if (isDroppablePreambleLine(line)) continue;
+    out.write(line + '\n');
+  }
+  await new Promise((resolve, reject) => {
+    out.end((err) => (err ? reject(err) : resolve()));
+  });
 }
 
 function getConnectionStringFromEnv(env) {
@@ -34,7 +79,26 @@ function getConnectionStringFromEnv(env) {
   return `postgres://${encodeURIComponent(user)}:${encodeURIComponent(pass)}@${host}:${port}/${db}`;
 }
 
-function main() {
+// Tracks the one temp dir this process may create so it can be removed on
+// any exit path: normal completion, an uncaught error, or Ctrl+C/SIGTERM.
+let tempDir = null;
+function cleanupTempDir() {
+  if (tempDir) {
+    fs.rmSync(tempDir, { recursive: true, force: true });
+    tempDir = null;
+  }
+}
+process.on('exit', cleanupTempDir);
+process.on('SIGINT', () => {
+  cleanupTempDir();
+  process.exit(130);
+});
+process.on('SIGTERM', () => {
+  cleanupTempDir();
+  process.exit(143);
+});
+
+async function main() {
   const inputArg = process.argv[2];
   if (!inputArg) {
     console.error('Usage: npm run restore:db -- backups/your-file.sql');
@@ -49,15 +113,13 @@ function main() {
 
   const url = getConnectionStringFromEnv(process.env);
 
-  const rawSql = fs.readFileSync(inputPath, 'utf8');
-  const sql = stripUnsupportedPreambleSettings(rawSql);
-
   let restorePath = inputPath;
-  let tempFile = null;
-  if (sql !== rawSql) {
-    tempFile = path.join(os.tmpdir(), `restore-${Date.now()}-${path.basename(inputPath)}`);
-    fs.writeFileSync(tempFile, sql);
-    restorePath = tempFile;
+  if (await fileHasDroppablePreamble(inputPath)) {
+    // mkdtemp's random suffix keeps concurrent restores of same-named files
+    // from colliding on the same path, unlike a Date.now()-based name.
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'restore-db-'));
+    restorePath = path.join(tempDir, path.basename(inputPath));
+    await writeWithoutUnsupportedPreamble(inputPath, restorePath);
     console.log('Note: dropped preamble SET(s) unsupported by the target server version.');
   }
 
@@ -69,7 +131,7 @@ function main() {
     env: process.env,
   });
 
-  if (tempFile) fs.rmSync(tempFile, { force: true });
+  cleanupTempDir();
 
   if (result.error) {
     if (result.error.code === 'ENOENT') {
@@ -87,4 +149,8 @@ function main() {
   console.log(`Restore complete from: ${inputPath}`);
 }
 
-main();
+main().catch((err) => {
+  cleanupTempDir();
+  console.error('ERROR:', err.message);
+  process.exit(1);
+});

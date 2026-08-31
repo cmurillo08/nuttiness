@@ -39,7 +39,7 @@
       "properties": {
         "id": { "anyOf": [ { "type": "string", "format": "uuid" }, { "type": "string", "minLength": 1 } ] },
         "raw_product_id": { "type": "string", "format": "uuid" },
-        "quantity": { "type": "number", "exclusiveMinimum": 0 },
+        "quantity": { "type": "integer", "minimum": 1 },
         "unit_cost": { "type": "number", "minimum": 0 },
         "purchased_at": { "type": "string", "format": "date-time" },
         "notes": { "anyOf": [{ "type": "string" }, { "type": "null" }] },
@@ -54,7 +54,7 @@
       "required": ["quantity", "unit_price"],
       "properties": {
         "prepared_product_id": { "anyOf": [ { "type": "string", "format": "uuid" }, { "type": "null" } ] },
-        "quantity": { "type": "number", "exclusiveMinimum": 0 },
+        "quantity": { "type": "integer", "minimum": 1 },
         "unit_price": { "type": "number", "minimum": 0 }
       },
       "additionalProperties": false
@@ -65,7 +65,7 @@
       "required": ["lines"],
       "properties": {
         "customer_name": { "anyOf": [ { "type": "string" }, { "type": "null" } ] },
-        "status": { "type": "string", "enum": ["prepared", "delivered", "paid", "cancelled"] },
+        "status": { "type": "string", "enum": ["ordered", "prepared", "delivered", "paid", "cancelled"] },
         "lines": { "type": "array", "items": { "$ref": "#/$defs/SaleItemCreate" } }
       },
       "additionalProperties": false
@@ -78,7 +78,7 @@
         "id": { "anyOf": [ { "type": "string", "format": "uuid" }, { "type": "string", "minLength": 1 } ] },
         "sale_id": { "type": "string", "format": "uuid" },
         "prepared_product_id": { "type": "string", "format": "uuid" },
-        "quantity": { "type": "number", "exclusiveMinimum": 0 },
+        "quantity": { "type": "integer", "minimum": 1 },
         "unit_price": { "type": "number", "minimum": 0 },
         "line_total": { "type": "number", "minimum": 0 },
         "created_at": { "type": "string", "format": "date-time" },
@@ -93,11 +93,40 @@
       "properties": {
         "id": { "anyOf": [ { "type": "string", "format": "uuid" }, { "type": "string", "minLength": 1 } ] },
         "customer_name": { "type": "string" },
-        "status": { "type": "string", "enum": ["prepared", "delivered", "paid", "cancelled"] },
+        "status": { "type": "string", "enum": ["ordered", "prepared", "delivered", "paid", "cancelled"] },
         "total_amount": { "type": "number", "minimum": 0 },
         "items": { "type": "array", "items": { "$ref": "#/$defs/SaleItem" } },
+        "credits": { "type": "array", "items": { "$ref": "#/$defs/SaleCredit" } },
+        "amount_paid": { "type": "number", "minimum": 0 },
+        "balance_due": { "type": "number", "minimum": 0 },
+        "credit_count": { "type": "integer", "minimum": 0 },
         "created_at": { "type": "string", "format": "date-time" },
         "updated_at": { "type": ["string", "null"], "format": "date-time" }
+      },
+      "additionalProperties": false
+    },
+
+    "SaleCredit": {
+      "type": "object",
+      "required": ["id", "sale_id", "amount", "recorded_at"],
+      "properties": {
+        "id": { "anyOf": [ { "type": "string", "format": "uuid" }, { "type": "string", "minLength": 1 } ] },
+        "sale_id": { "type": "string", "format": "uuid" },
+        "amount": { "type": "number", "exclusiveMinimum": 0 },
+        "notes": { "anyOf": [{ "type": "string", "maxLength": 5000 }, { "type": "null" }] },
+        "recorded_at": { "type": "string", "format": "date-time" },
+        "created_at": { "type": "string", "format": "date-time" },
+        "updated_at": { "type": ["string", "null"], "format": "date-time" }
+      },
+      "additionalProperties": false
+    },
+
+    "SaleCreditCreate": {
+      "type": "object",
+      "required": ["amount"],
+      "properties": {
+        "amount": { "type": "number", "exclusiveMinimum": 0 },
+        "notes": { "anyOf": [{ "type": "string", "maxLength": 5000 }, { "type": "null" }] }
       },
       "additionalProperties": false
     }

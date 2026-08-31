@@ -1,21 +1,40 @@
 import validators from '../../../lib/validators';
 import errors from '../../../lib/errors';
 import pagination from '../../../lib/pagination';
+import sorting from '../../../lib/sorting';
+import dateRange from '../../../lib/dateRange';
 import { countSales, listSales } from '../../../lib/db/queries/sales';
 import { createSale } from '../../../lib/services/sales';
+
+const SORT_OPTIONS = {
+  allowed: ['created_at', 'customer_name'],
+  defaultSort: 'created_at',
+  defaultOrder: 'desc',
+  columnDefaults: { created_at: 'desc', customer_name: 'asc' },
+};
 
 export async function GET(req) {
   const url = new URL(req.url);
   const { limit, offset, errors: paginationErrors } = pagination.parsePaginationParams(url);
-  
+
   if (paginationErrors) {
     return errors.badRequest(paginationErrors);
   }
-  
+
+  const { sort, order, errors: sortErrors } = sorting.parseSortParams(url, SORT_OPTIONS);
+  if (sortErrors) {
+    return errors.badRequest(sortErrors);
+  }
+
+  const { rangeDays, errors: rangeErrors } = dateRange.parseDateRangeParam(url);
+  if (rangeErrors) {
+    return errors.badRequest(rangeErrors);
+  }
+
   const status = url.searchParams.get('status');
 
-  const rows = await listSales({ limit, offset, status });
-  const total = await countSales({ status });
+  const rows = await listSales({ limit, offset, status, rangeDays, sort, order });
+  const total = await countSales({ status, rangeDays });
   return errors.json(pagination.buildPaginationResponse(rows, total, limit, offset), 200);
 }
 

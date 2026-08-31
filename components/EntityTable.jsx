@@ -8,9 +8,15 @@ export default function EntityTable({
   columns = [],
   editHrefBase,
   viewHrefBase,
+  deleteHrefBase,
   entityName = "Item",
   items: propItems,
   onDeleteSuccess,
+  deleteWarning,
+  sort,
+  order,
+  onSortChange,
+  emptyMessage = "No items found.",
 }) {
   const [items, setItems] = useState(propItems ?? [])
   const [loading, setLoading] = useState(!propItems)
@@ -26,10 +32,17 @@ export default function EntityTable({
   }
 
   const pluralEntityName = pluralize(entityName)
-  const routeBase = editHrefBase || viewHrefBase
+  const routeBase = editHrefBase || viewHrefBase || deleteHrefBase
   const apiBase = routeBase
     ? `/api${routeBase.startsWith('/') ? '' : '/'}${routeBase}`
     : null
+
+  const confirmItem = items.find((i) => String(i.id) === String(confirm.id))
+
+  const sortableColumns = columns.filter((c) => c.sortKey)
+  const canSort = sortableColumns.length > 0 && typeof onSortChange === 'function'
+  const currentSortMatchesColumn = sortableColumns.some((c) => c.sortKey === sort)
+  const mobileSortValue = currentSortMatchesColumn ? sort : (sort || '')
 
   useEffect(() => {
     if (propItems) {
@@ -76,19 +89,26 @@ export default function EntityTable({
     setConfirm({ open: true, id })
   }
 
+  function showDeleteFor() {
+    return Boolean(editHrefBase || deleteHrefBase)
+  }
+
   async function doDelete() {
     const id = confirm.id
     try {
       if (!apiBase) throw new Error('Missing API base route for delete action')
       const res = await fetch(`${apiBase}/${id}`, { method: "DELETE" })
-      if (!res.ok) throw new Error(`Delete failed: ${res.status}`)
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}))
+        throw new Error(body.error || body.message || `Delete failed: ${res.status}`)
+      }
       if (onDeleteSuccess) {
         await onDeleteSuccess(id)
       } else {
         setItems((s) => s.filter((i) => String(i.id) !== String(id)))
       }
     } catch (e) {
-      setError(String(e))
+      setError(e && e.message ? e.message : String(e))
     } finally {
       setConfirm({ open: false, id: null })
     }
@@ -98,6 +118,34 @@ export default function EntityTable({
     if (column.render) return column.render(item)
     if (column.type === "amount") return <Amount value={item[column.key]} />
     return String(item[column.key] ?? "")
+  }
+
+  function isActiveSortColumn(column) {
+    return Boolean(column.sortKey) && column.sortKey === sort
+  }
+
+  function ariaSortFor(column) {
+    if (!isActiveSortColumn(column)) return 'none'
+    return order === 'desc' ? 'descending' : 'ascending'
+  }
+
+  function sortIndicator(column) {
+    if (!isActiveSortColumn(column)) return null
+    return <span aria-hidden="true">{order === 'desc' ? '▼' : '▲'}</span>
+  }
+
+  function headerContent(column) {
+    if (!column.sortKey) return column.label
+    return (
+      <button
+        type="button"
+        onClick={() => onSortChange(column.sortKey)}
+        className="inline-flex items-center gap-1 text-left font-medium text-primary hover:text-primary/80"
+      >
+        {column.label}
+        {sortIndicator(column)}
+      </button>
+    )
   }
 
   return (
@@ -112,10 +160,40 @@ export default function EntityTable({
             <div>{error}</div>
           </div>
         )}
-        {!loading && !items.length && <div className="text-sm text-gray-500">No items found.</div>}
+        {!loading && !items.length && <div className="text-sm text-gray-500">{emptyMessage}</div>}
       </div>
       {items.length > 0 && (
         <>
+          {canSort && (
+            <div className="flex items-center gap-2 lg:hidden">
+              <label htmlFor="entity-table-sort" className="shrink-0 text-sm font-medium text-gray-700">
+                Sort by
+              </label>
+              <select
+                id="entity-table-sort"
+                value={mobileSortValue}
+                onChange={(e) => onSortChange(e.target.value)}
+                className="min-h-11 flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm"
+              >
+                {!currentSortMatchesColumn && (
+                  <option value={mobileSortValue}>Default</option>
+                )}
+                {sortableColumns.map((c) => (
+                  <option key={c.sortKey} value={c.sortKey}>{c.label}</option>
+                ))}
+              </select>
+              <button
+                type="button"
+                onClick={() => sort && onSortChange(sort)}
+                disabled={!sort}
+                aria-label={`Toggle sort direction, currently ${order === 'desc' ? 'descending' : 'ascending'}`}
+                className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-gray-300 text-base disabled:opacity-50"
+              >
+                {order === 'desc' ? '▼' : '▲'}
+              </button>
+            </div>
+          )}
+
           <div className="space-y-3 lg:hidden">
             {items.map((it) => (
               <div key={it.id} className="rounded-xl border border-gray-200 bg-white p-3 shadow-sm">
@@ -144,7 +222,7 @@ export default function EntityTable({
                       Edit
                     </Link>
                   ) : null}
-                  {editHrefBase ? (
+                  {showDeleteFor(it) ? (
                     <button
                       className="inline-flex min-h-10 items-center rounded-md border border-red-200 px-3 text-sm font-medium text-red-600"
                       onClick={() => requestDelete(it.id)}
@@ -162,8 +240,13 @@ export default function EntityTable({
               <thead className="sticky top-0 z-20">
                 <tr>
                   {columns.map((c) => (
-                    <th key={c.key} className="border-b border-gray-200 bg-white px-3 py-2 text-left text-sm font-medium text-primary">
-                      {c.label}
+                    <th
+                      key={c.key}
+                      scope="col"
+                      aria-sort={c.sortKey ? ariaSortFor(c) : undefined}
+                      className="border-b border-gray-200 bg-white px-3 py-2 text-left text-sm font-medium text-primary"
+                    >
+                      {headerContent(c)}
                     </th>
                   ))}
                   <th className="border-b border-gray-200 bg-white px-3 py-2 text-left text-sm font-medium text-primary">Actions</th>
@@ -194,7 +277,7 @@ export default function EntityTable({
                             </svg>
                           </Link>
                         ) : null}
-                        {editHrefBase ? (
+                        {showDeleteFor(it) ? (
                           <button className="text-red-600 transition-colors hover:text-red-700" title="Delete" onClick={() => requestDelete(it.id)}>
                             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -212,7 +295,9 @@ export default function EntityTable({
       )}
 
       <ConfirmDialog open={confirm.open} title={`Delete ${entityName}`} onCancel={() => setConfirm({ open: false, id: null })} onConfirm={doDelete}>
-        Are you sure you want to delete this {entityName.toLowerCase()}?
+        {typeof deleteWarning === 'function'
+          ? deleteWarning(confirmItem)
+          : `Are you sure you want to delete this ${entityName.toLowerCase()}?`}
       </ConfirmDialog>
     </div>
   )

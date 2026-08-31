@@ -47,21 +47,21 @@ export default function OrderBuilder({ onSuccess }) {
     }
     const qty = Number(newLineQty)
     const unitPrice = Number(newLineUnitPrice)
-    if (!(qty > 0)) {
-      setError('Quantity must be > 0')
+    if (!Number.isInteger(qty) || qty <= 0) {
+      setError('Quantity must be a whole number greater than 0')
       return
     }
     if (!(unitPrice >= 0)) {
       setError('Unit price must be >= 0')
       return
     }
-    
-    setLines((s) => [...s, { 
-      id: Date.now(), 
-      prepared_product_id: selectedProductId, 
-      product_name: selectedProduct?.name || '', 
-      qty, 
-      unit_price: unitPrice 
+
+    setLines((s) => [...s, {
+      id: Date.now(),
+      prepared_product_id: selectedProductId,
+      product_name: selectedProduct?.name || '',
+      qty,
+      unit_price: unitPrice
     }])
     
     // Reset form
@@ -98,8 +98,8 @@ export default function OrderBuilder({ onSuccess }) {
       const l = lines[i]
       const qty = Number(l.qty)
       const up = Number(l.unit_price)
-      if (!(qty > 0)) {
-        setError(`Line ${i + 1}: quantity must be > 0`)
+      if (!Number.isInteger(qty) || qty <= 0) {
+        setError(`Line ${i + 1}: quantity must be a whole number greater than 0`)
         setSubmitting(false)
         return
       }
@@ -165,11 +165,13 @@ export default function OrderBuilder({ onSuccess }) {
             <label className="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
             <input 
               type="number" 
-              value={newLineQty} 
-              onChange={(e) => setNewLineQty(e.target.value)} 
+              value={newLineQty}
+              onChange={(e) => setNewLineQty(e.target.value)}
               placeholder="0"
+              step="1"
               min="1"
-              className="min-h-11 w-full rounded-md border border-gray-300 px-3 py-2.5" 
+              inputMode="numeric"
+              className="min-h-11 w-full rounded-md border border-gray-300 px-3 py-2.5"
             />
           </div>
 
@@ -214,7 +216,7 @@ export default function OrderBuilder({ onSuccess }) {
               </div>
               <div className="mt-2 grid grid-cols-1 gap-2 text-sm sm:grid-cols-[auto_96px_auto_112px_1fr] sm:items-center">
                 <label className="text-xs font-medium sm:text-right">Qty</label>
-                <input type="number" value={l.qty} onChange={(e) => updateLine(l.id, { qty: e.target.value })} className="min-h-10 w-full rounded border p-2 sm:min-h-0 sm:p-1" step="0.01" min="0" />
+                <input type="number" value={l.qty} onChange={(e) => updateLine(l.id, { qty: e.target.value })} className="min-h-10 w-full rounded border p-2 sm:min-h-0 sm:p-1" step="1" min="1" inputMode="numeric" />
                 <label className="text-xs font-medium sm:text-right">Unit Price</label>
                 <input type="number" value={l.unit_price} onChange={(e) => updateLine(l.id, { unit_price: e.target.value })} className="min-h-10 w-full rounded border p-2 sm:min-h-0 sm:p-1" step="0.01" />
                 <div className="font-medium sm:ml-auto">Line: <Amount value={Number(l.qty || 0) * Number(l.unit_price || 0)} /></div>
